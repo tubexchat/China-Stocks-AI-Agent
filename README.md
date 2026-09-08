@@ -43,7 +43,19 @@ xcodebuild build -project Axblade.xcodeproj -scheme Axblade -configuration Relea
 真实接口冒烟测试(`LiveFuyaoSmokeTests`)默认跳过;在测试宿主容器的 tmp 里创建
 `~/Library/Containers/io.primit.axblade/Data/tmp/AXBLADE_LIVE` 文件后再跑即可启用。
 
-`.xcodeproj` 不入库,改工程配置请改 `project.yml`。签名 / 打包 / 上架脚本(`scripts/release.sh`、`scripts/package-dmg.sh`、`.github/workflows/release.yml`)沿用原项目,产物名为 `AShareAgent-<版本>-<构建号>.dmg`。
+`.xcodeproj` 不入库,改工程配置请改 `project.yml`。
+
+## 自动打包与发布(CI)
+
+每次推 `main`,`.github/workflows/release.yml` 在 macOS runner 上:跑测试 → Release 构建 →
+`scripts/package-dmg.sh` 打 `AShareAgent-<版本>-<构建号>.dmg`(附 ZIP 与 `latest.json`)→
+发布到本仓库的 **GitHub Release**(tag `v<版本>-<构建号>`)→ Lark 群机器人通知(下载按钮直指 Release 附件)。
+
+- 配置 `MAC_SIGNING_P12_BASE64` + `MAC_SIGNING_P12_PASSWORD`(Developer ID Application 证书)则正式签名;
+  再配 `NOTARY_KEY_P8_BASE64` + `NOTARY_KEY_ID` + `NOTARY_ISSUER_ID` 则公证并 staple。
+  没有 secrets 时是 ad-hoc 签名的测试版:可运行,首次需 **右键 → 打开** 绕过 Gatekeeper。
+- Lark webhook 默认写在工作流里,配置 `secrets.LARK_WEBHOOK` 可覆盖。
+- CI 失败时日志推到 `ci-logs` 分支(`git fetch origin ci-logs`)。
 
 ## 架构
 

@@ -1,23 +1,22 @@
 name: Release · AShareAgent.dmg
 
 # 每次推 main:测试 → Release 构建 → 打 DMG(有证书就正式签名+公证,没有就 ad-hoc)
-# → 用 GitHub OIDC 令牌上传到 api.chillskill.xyz(网站「Download for Mac」读 /v1/releases/latest)
+# → 发布到本仓库的 GitHub Release(tag v<版本>-<构建号>,附 DMG / ZIP / latest.json)→ Lark 通知
 on:
   push:
     branches: [main]
   workflow_dispatch: {}
 
 permissions:
-  id-token: write   # 铸造 GitHub OIDC 令牌 → 直接上传到 api.chillskill.xyz(后端校验,不需要 secret)
-  contents: write   # 失败时把日志推到 ci-logs 分支
+  contents: write   # 创建 GitHub Release;失败时把日志推到 ci-logs 分支
 
 concurrency:
-  group: release-chillskill-mac
+  group: release-ashareagent-mac
   cancel-in-progress: false
 
 env:
-  # Lark 群机器人(私有仓库;若配置了 secrets.LARK_WEBHOOK 则优先用它)
-  LARK_WEBHOOK: ${{ secrets.LARK_WEBHOOK || 'https://open.larksuite.com/open-apis/bot/v2/hook/6ea42159-6ddf-446e-b6e8-44374f95c5d7' }}
+  # Lark 群机器人(若配置了 secrets.LARK_WEBHOOK 则优先用它)
+  LARK_WEBHOOK: ${{ secrets.LARK_WEBHOOK || 'https://open.larksuite.com/open-apis/bot/v2/hook/81aea633-3d3d-46ee-97cb-af24a9560865' }}
 
 jobs:
   build:
@@ -102,29 +101,25 @@ jobs:
             build/dmg/latest.json
           retention-days: 30
 
-      # ---- 发布到服务器:用 GitHub Actions 自带的 OIDC 令牌直接上传到 API(后端校验签名 + 仓库/分支),不需要任何 secret ----
-      - name: Upload DMG/ZIP/latest.json to api.chillskill.xyz (GitHub OIDC)
-        id: upload
+      # ---- 发布到本仓库的 GitHub Release:tag v<版本>-<构建号>,附件 DMG / ZIP / latest.json ----
+      - name: Publish GitHub Release
+        id: release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          IDENTITY: ${{ steps.cert.outputs.identity }}
         run: |
           set -eu
-          OIDC_TOKEN=$(curl -sS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=https://api.chillskill.xyz" \
-            | python3 -c 'import sys,json;print(json.load(sys.stdin)["value"])')
-          export OIDC_TOKEN
-          python3 scripts/upload-release.py --dir build/dmg --api https://api.chillskill.xyz 2>&1 | tee build-upload.log
-
-      - name: Verify via API
-        id: verify
-        run: |
-          set -eu
-          published=$(python3 -c 'import json;print(str(json.load(open("build/dmg/upload-result.json"))["published"]).lower())')
-          echo "published=$published" >> "$GITHUB_OUTPUT"
-          if [ "$published" != "true" ]; then echo "未发布(信任等级不降级),跳过校验"; exit 0; fi
-          sleep 2
-          body=$(curl -sf -m 10 https://api.chillskill.xyz/v1/releases/latest); echo "$body"
-          echo "$body" | grep -q "\"build\": *$GITHUB_RUN_NUMBER" || { echo "::error::/v1/releases/latest 未更新到本次构建"; exit 1; }
-          url=$(echo "$body" | python3 -c 'import sys,json;print(json.load(sys.stdin)["download_url"])')
-          curl -sfI -m 15 "$url" | head -1
+          meta=build/dmg/latest.json
+          ver=$(python3 -c 'import json;print(json.load(open("'"$meta"'"))["version"])')
+          file=$(python3 -c 'import json;print(json.load(open("'"$meta"'"))["file"])')
+          tag="v${ver}-${GITHUB_RUN_NUMBER}"
+          signed=$([ "$IDENTITY" != "-" ] && echo "Developer ID 签名" || echo "ad-hoc 签名(未公证,首次需右键 → 打开)")
+          notes="A股智能体 (AShareAgent) for Mac v${ver},构建 #${GITHUB_RUN_NUMBER}。${signed}。仅支持 Apple Silicon,macOS 14+。提交 ${GITHUB_SHA:0:7}。"
+          gh release create "$tag" build/dmg/*.dmg build/dmg/*.zip build/dmg/latest.json \
+            --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "AShareAgent v${ver} (#${GITHUB_RUN_NUMBER})" --notes "$notes" --latest
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "url=${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases/tag/${tag}" >> "$GITHUB_OUTPUT"
+          echo "download=${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases/download/${tag}/${file}" >> "$GITHUB_OUTPUT"
 
       - name: Lark 通知
         if: always()
@@ -133,9 +128,9 @@ jobs:
           ACTOR: ${{ github.actor }}
           O_TEST: ${{ steps.test.outcome }}
           O_PKG: ${{ steps.pkg.outcome }}
-          O_UPLOAD: ${{ steps.upload.outcome }}
-          O_VERIFY: ${{ steps.verify.outcome }}
-          PUBLISHED: ${{ steps.verify.outputs.published }}
+          O_RELEASE: ${{ steps.release.outcome }}
+          RELEASE_URL: ${{ steps.release.outputs.url }}
+          DOWNLOAD_URL: ${{ steps.release.outputs.download }}
           IDENTITY: ${{ steps.cert.outputs.identity }}
         run: |
           set -u
@@ -151,19 +146,15 @@ jobs:
           else
             ver="?"; file="?"; size="?"; sha="?"; signed="?"
           fi
-          if [ "$O_VERIFY" = "success" ] && [ "$PUBLISHED" != "true" ]; then
-            STATUS=warning
-            BODY="**应用**:A股智能体 (AShareAgent) for Mac\n**版本**:v${ver}(构建 #${GITHUB_RUN_NUMBER})· ${size} MB · ${signed}\n**提交**:${short} ${subject}\n**推送者**:${ACTOR}\n**未发布原因**:本次构建未签名/未公证,服务端拒绝用它覆盖线上已公证版本(信任等级不降级);仓库配置签名与公证 secrets(见 README)后 CI 会自动发布公证版。安装包已上传为 Actions artifact"
-            BUTTONS="Actions artifact|${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID};当前线上版本|https://api.chillskill.xyz/v1/releases/latest"
-          elif [ "$O_VERIFY" = "success" ]; then
+          if [ "$O_RELEASE" = "success" ]; then
             STATUS=success
             BODY="**应用**:A股智能体 (AShareAgent) for Mac\n**版本**:v${ver}(构建 #${GITHUB_RUN_NUMBER})· ${size} MB · ${signed}\n**文件**:${file}(sha256 ${sha}…)\n**提交**:${short} ${subject}\n**推送者**:${ACTOR}"
-            BUTTONS="下载 DMG|https://api.chillskill.xyz/downloads/mac/${file};发布信息|https://api.chillskill.xyz/v1/releases/latest;Actions|${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+            BUTTONS="下载 DMG|${DOWNLOAD_URL};GitHub Release|${RELEASE_URL};Actions|${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
           else
             STATUS=failure
-            stage="测试"; [ "$O_TEST" = "success" ] && stage="打包"; [ "$O_PKG" = "success" ] && stage="上传(GitHub OIDC → API)"; [ "$O_UPLOAD" = "success" ] && stage="发布校验"
-            hint=""; [ "$O_PKG" = "success" ] && [ "$O_UPLOAD" != "success" ] && hint="\n**提示**:DMG 已打好(见 Actions artifact);上传失败看 ci-logs 里的 build-upload 日志(常见:API 未放行本仓库/分支、网络)"
-            BODY="**应用**:A股智能体 (AShareAgent) for Mac\n**失败阶段**:${stage}(test=${O_TEST}, pkg=${O_PKG}, upload=${O_UPLOAD}, verify=${O_VERIFY})\n**版本**:v${ver}(构建 #${GITHUB_RUN_NUMBER})\n**提交**:${short} ${subject}\n**推送者**:${ACTOR}\n**日志**:仓库 ci-logs 分支(git fetch origin ci-logs)${hint}"
+            stage="测试"; [ "$O_TEST" = "success" ] && stage="打包"; [ "$O_PKG" = "success" ] && stage="发布 GitHub Release"
+            hint=""; [ "$O_PKG" = "success" ] && [ "$O_RELEASE" != "success" ] && hint="\n**提示**:DMG 已打好(见 Actions artifact);Release 创建失败请看 Actions 日志"
+            BODY="**应用**:A股智能体 (AShareAgent) for Mac\n**失败阶段**:${stage}(test=${O_TEST}, pkg=${O_PKG}, release=${O_RELEASE})\n**版本**:v${ver}(构建 #${GITHUB_RUN_NUMBER})\n**提交**:${short} ${subject}\n**推送者**:${ACTOR}\n**日志**:仓库 ci-logs 分支(git fetch origin ci-logs)${hint}"
             BUTTONS="Actions|${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
           fi
           export STATUS TITLE="AShareAgent Mac 打包发布" BODY BUTTONS
@@ -176,11 +167,11 @@ jobs:
         run: |
           set -eux
           mkdir -p /tmp/ci-logs
-          for f in build-test.log build-package.log build-upload.log; do [ -f "$f" ] && cp "$f" "/tmp/ci-logs/${f%.log}-${GITHUB_RUN_NUMBER}.log" || true; done
+          for f in build-test.log build-package.log; do [ -f "$f" ] && cp "$f" "/tmp/ci-logs/${f%.log}-${GITHUB_RUN_NUMBER}.log" || true; done
           { xcodebuild -version; sw_vers; } > "/tmp/ci-logs/env-${GITHUB_RUN_NUMBER}.txt" 2>&1 || true
           {
-            echo "steps: cert=${{ steps.cert.outcome }} pkg=${{ steps.pkg.outcome }} upload=${{ steps.upload.outcome }} verify=${{ steps.verify.outcome }}"
+            echo "steps: cert=${{ steps.cert.outcome }} pkg=${{ steps.pkg.outcome }} release=${{ steps.release.outcome }}"
           } > "/tmp/ci-logs/steps-${GITHUB_RUN_NUMBER}.txt"
-          cd /tmp/ci-logs && git init -q -b ci-logs && git config user.email ci@chillskill.xyz && git config user.name ci-logs
+          cd /tmp/ci-logs && git init -q -b ci-logs && git config user.email ci@users.noreply.github.com && git config user.name ci-logs
           git add -A && git commit -q -m "release logs run ${GITHUB_RUN_NUMBER} (${GITHUB_SHA})"
           git push -f "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" ci-logs:ci-logs
