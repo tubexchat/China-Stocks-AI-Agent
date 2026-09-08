@@ -1,0 +1,10 @@
+
+.DS_Store
+*.xcarchive
+*.xcodeproj
+*.xcresult
+# 打包产物
+build/
+DerivedData/
+ExportOptions/*.local.plist
+xcuserdata/

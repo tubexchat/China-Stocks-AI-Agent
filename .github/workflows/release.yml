@@ -1,0 +1,186 @@
+name: Release · ChillSkill.dmg
+
+# 每次推 main:测试 → Release 构建 → 打 DMG(有证书就正式签名+公证,没有就 ad-hoc)
+# → 用 GitHub OIDC 令牌上传到 api.chillskill.xyz(网站「Download for Mac」读 /v1/releases/latest)
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  id-token: write   # 铸造 GitHub OIDC 令牌 → 直接上传到 api.chillskill.xyz(后端校验,不需要 secret)
+  contents: write   # 失败时把日志推到 ci-logs 分支
+
+concurrency:
+  group: release-chillskill-mac
+  cancel-in-progress: false
+
+env:
+  # Lark 群机器人(私有仓库;若配置了 secrets.LARK_WEBHOOK 则优先用它)
+  LARK_WEBHOOK: ${{ secrets.LARK_WEBHOOK || 'https://open.larksuite.com/open-apis/bot/v2/hook/6ea42159-6ddf-446e-b6e8-44374f95c5d7' }}
+
+jobs:
+  build:
+    name: Test · Build · Package
+    runs-on: macos-15
+    outputs:
+      dmg: ${{ steps.pkg.outputs.dmg }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select newest Xcode & install XcodeGen
+        run: |
+          set -eux
+          XC=$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)
+          sudo xcode-select -s "$XC"
+          xcodebuild -version
+          brew install xcodegen >/dev/null 2>&1 || brew upgrade xcodegen >/dev/null 2>&1 || true
+          xcodegen --version
+
+      - name: Test
+        id: test
+        run: |
+          set -o pipefail
+          xcodegen generate >/dev/null
+          xcodebuild test -project Axblade.xcodeproj -scheme Axblade \
+            -destination 'platform=macOS,arch=arm64' 2>&1 | tee build-test.log \
+            | grep -E "error:|Test Suite .* (passed|failed)|Executed [0-9]+ tests|\*\* TEST (SUCCEEDED|FAILED) \*\*|BUILD FAILED" | tail -20
+
+      # ---- 可选:正式签名 / 公证(仓库或组织 secrets 存在时自动启用)----
+      #   MAC_SIGNING_P12_BASE64 / MAC_SIGNING_P12_PASSWORD  → "Developer ID Application" 证书(.p12,base64)
+      #   NOTARY_KEY_P8_BASE64 / NOTARY_KEY_ID / NOTARY_ISSUER_ID → App Store Connect API Key,公证用
+      #   或 NOTARY_APPLE_ID / NOTARY_PASSWORD(App 专用密码)/ NOTARY_TEAM_ID → 同样可公证
+      - name: Import Developer ID certificate (optional)
+        id: cert
+        env:
+          P12_B64: ${{ secrets.MAC_SIGNING_P12_BASE64 }}
+          P12_PASS: ${{ secrets.MAC_SIGNING_P12_PASSWORD }}
+        run: |
+          set -eu
+          if [ -z "${P12_B64:-}" ]; then echo "identity=-" >> "$GITHUB_OUTPUT"; echo "no signing secrets → ad-hoc"; exit 0; fi
+          KC=$RUNNER_TEMP/signing.keychain-db; KCPASS=$(uuidgen)
+          security create-keychain -p "$KCPASS" "$KC"
+          security set-keychain-settings -lut 21600 "$KC"
+          security unlock-keychain -p "$KCPASS" "$KC"
+          echo "$P12_B64" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+          security import "$RUNNER_TEMP/cert.p12" -k "$KC" -P "${P12_PASS:-}" -T /usr/bin/codesign -T /usr/bin/security
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$KCPASS" "$KC" >/dev/null
+          security list-keychains -d user -s "$KC" $(security list-keychains -d user | tr -d '"')
+          ID=$(security find-identity -v -p codesigning "$KC" | grep "Developer ID Application" | head -1 | sed -E 's/.*"(.*)"/\1/')
+          [ -n "$ID" ] || { echo "::error::p12 里没有 Developer ID Application 证书"; exit 1; }
+          echo "identity=$ID" >> "$GITHUB_OUTPUT"; echo "signing as: $ID"
+
+      - name: Package DMG
+        id: pkg
+        env:
+          IDENTITY: ${{ steps.cert.outputs.identity }}
+          NOTARY_B64: ${{ secrets.NOTARY_KEY_P8_BASE64 }}
+          NOTARY_KEY_ID: ${{ secrets.NOTARY_KEY_ID }}
+          NOTARY_ISSUER: ${{ secrets.NOTARY_ISSUER_ID }}
+          NOTARY_APPLE_ID: ${{ secrets.NOTARY_APPLE_ID }}
+          NOTARY_PASSWORD: ${{ secrets.NOTARY_PASSWORD }}
+          NOTARY_TEAM_ID: ${{ secrets.NOTARY_TEAM_ID }}
+        run: |
+          set -eu
+          ARGS=(--build "$GITHUB_RUN_NUMBER" --identity "$IDENTITY")
+          if [ -n "${NOTARY_B64:-}" ] && [ "$IDENTITY" != "-" ]; then
+            echo "$NOTARY_B64" | base64 --decode > "$RUNNER_TEMP/notary.p8"
+            ARGS+=(--notary-key "$RUNNER_TEMP/notary.p8" --notary-key-id "$NOTARY_KEY_ID" --notary-issuer "$NOTARY_ISSUER")
+          elif [ -n "${NOTARY_APPLE_ID:-}" ] && [ -n "${NOTARY_PASSWORD:-}" ] && [ "$IDENTITY" != "-" ]; then
+            ARGS+=(--notary-apple-id "$NOTARY_APPLE_ID" --notary-password "$NOTARY_PASSWORD" --notary-team-id "${NOTARY_TEAM_ID:-A2SZ953D3V}")
+          fi
+          ./scripts/package-dmg.sh "${ARGS[@]}" 2>&1 | tee build-package.log | tail -15
+          echo "dmg=$(python3 -c 'import json;print(json.load(open("build/dmg/latest.json"))["file"])')" >> "$GITHUB_OUTPUT"
+
+      - name: Upload artifact (record)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ChillSkill-dmg-${{ github.run_number }}
+          path: |
+            build/dmg/*.dmg
+            build/dmg/*.zip
+            build/dmg/latest.json
+          retention-days: 30
+
+      # ---- 发布到服务器:用 GitHub Actions 自带的 OIDC 令牌直接上传到 API(后端校验签名 + 仓库/分支),不需要任何 secret ----
+      - name: Upload DMG/ZIP/latest.json to api.chillskill.xyz (GitHub OIDC)
+        id: upload
+        run: |
+          set -eu
+          OIDC_TOKEN=$(curl -sS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=https://api.chillskill.xyz" \
+            | python3 -c 'import sys,json;print(json.load(sys.stdin)["value"])')
+          export OIDC_TOKEN
+          python3 scripts/upload-release.py --dir build/dmg --api https://api.chillskill.xyz 2>&1 | tee build-upload.log
+
+      - name: Verify via API
+        id: verify
+        run: |
+          set -eu
+          published=$(python3 -c 'import json;print(str(json.load(open("build/dmg/upload-result.json"))["published"]).lower())')
+          echo "published=$published" >> "$GITHUB_OUTPUT"
+          if [ "$published" != "true" ]; then echo "未发布(信任等级不降级),跳过校验"; exit 0; fi
+          sleep 2
+          body=$(curl -sf -m 10 https://api.chillskill.xyz/v1/releases/latest); echo "$body"
+          echo "$body" | grep -q "\"build\": *$GITHUB_RUN_NUMBER" || { echo "::error::/v1/releases/latest 未更新到本次构建"; exit 1; }
+          url=$(echo "$body" | python3 -c 'import sys,json;print(json.load(sys.stdin)["download_url"])')
+          curl -sfI -m 15 "$url" | head -1
+
+      - name: Lark 通知
+        if: always()
+        env:
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+          ACTOR: ${{ github.actor }}
+          O_TEST: ${{ steps.test.outcome }}
+          O_PKG: ${{ steps.pkg.outcome }}
+          O_UPLOAD: ${{ steps.upload.outcome }}
+          O_VERIFY: ${{ steps.verify.outcome }}
+          PUBLISHED: ${{ steps.verify.outputs.published }}
+          IDENTITY: ${{ steps.cert.outputs.identity }}
+        run: |
+          set -u
+          short=${GITHUB_SHA:0:7}
+          subject=$(printf '%s' "$COMMIT_MSG" | head -1 | cut -c1-80)
+          meta=build/dmg/latest.json
+          if [ -f "$meta" ]; then
+            ver=$(python3 -c 'import json;print(json.load(open("'"$meta"'"))["version"])')
+            file=$(python3 -c 'import json;print(json.load(open("'"$meta"'"))["file"])')
+            size=$(python3 -c 'import json;print(round(json.load(open("'"$meta"'"))["size"]/1048576,1))')
+            sha=$(python3 -c 'import json;print(json.load(open("'"$meta"'"))["sha256"][:12])')
+            signed=$([ "$IDENTITY" != "-" ] && echo "Developer ID" || echo "ad-hoc(未签名,首次右键打开)")
+          else
+            ver="?"; file="?"; size="?"; sha="?"; signed="?"
+          fi
+          if [ "$O_VERIFY" = "success" ] && [ "$PUBLISHED" != "true" ]; then
+            STATUS=warning
+            BODY="**应用**:ChillSkill for Mac\n**版本**:v${ver}(构建 #${GITHUB_RUN_NUMBER})· ${size} MB · ${signed}\n**提交**:${short} ${subject}\n**推送者**:${ACTOR}\n**未发布原因**:本次构建未签名/未公证,服务端拒绝用它覆盖线上已公证版本(信任等级不降级);仓库配置签名与公证 secrets(见 README)后 CI 会自动发布公证版。安装包已上传为 Actions artifact"
+            BUTTONS="Actions artifact|${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID};当前线上版本|https://api.chillskill.xyz/v1/releases/latest"
+          elif [ "$O_VERIFY" = "success" ]; then
+            STATUS=success
+            BODY="**应用**:ChillSkill for Mac\n**版本**:v${ver}(构建 #${GITHUB_RUN_NUMBER})· ${size} MB · ${signed}\n**文件**:${file}(sha256 ${sha}…)\n**提交**:${short} ${subject}\n**推送者**:${ACTOR}"
+            BUTTONS="下载 DMG|https://api.chillskill.xyz/downloads/mac/${file};发布信息|https://api.chillskill.xyz/v1/releases/latest;Actions|${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          else
+            STATUS=failure
+            stage="测试"; [ "$O_TEST" = "success" ] && stage="打包"; [ "$O_PKG" = "success" ] && stage="上传(GitHub OIDC → API)"; [ "$O_UPLOAD" = "success" ] && stage="发布校验"
+            hint=""; [ "$O_PKG" = "success" ] && [ "$O_UPLOAD" != "success" ] && hint="\n**提示**:DMG 已打好(见 Actions artifact);上传失败看 ci-logs 里的 build-upload 日志(常见:API 未放行本仓库/分支、网络)"
+            BODY="**应用**:ChillSkill for Mac\n**失败阶段**:${stage}(test=${O_TEST}, pkg=${O_PKG}, upload=${O_UPLOAD}, verify=${O_VERIFY})\n**版本**:v${ver}(构建 #${GITHUB_RUN_NUMBER})\n**提交**:${short} ${subject}\n**推送者**:${ACTOR}\n**日志**:仓库 ci-logs 分支(git fetch origin ci-logs)${hint}"
+            BUTTONS="Actions|${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          fi
+          export STATUS TITLE="ChillSkill Mac 打包发布" BODY BUTTONS
+          ./.github/scripts/notify-lark.sh
+
+      - name: Publish logs to ci-logs branch (on failure)
+        if: failure()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -eux
+          mkdir -p /tmp/ci-logs
+          for f in build-test.log build-package.log build-upload.log; do [ -f "$f" ] && cp "$f" "/tmp/ci-logs/${f%.log}-${GITHUB_RUN_NUMBER}.log" || true; done
+          { xcodebuild -version; sw_vers; } > "/tmp/ci-logs/env-${GITHUB_RUN_NUMBER}.txt" 2>&1 || true
+          {
+            echo "steps: cert=${{ steps.cert.outcome }} pkg=${{ steps.pkg.outcome }} upload=${{ steps.upload.outcome }} verify=${{ steps.verify.outcome }}"
+          } > "/tmp/ci-logs/steps-${GITHUB_RUN_NUMBER}.txt"
+          cd /tmp/ci-logs && git init -q -b ci-logs && git config user.email ci@chillskill.xyz && git config user.name ci-logs
+          git add -A && git commit -q -m "release logs run ${GITHUB_RUN_NUMBER} (${GITHUB_SHA})"
+          git push -f "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" ci-logs:ci-logs

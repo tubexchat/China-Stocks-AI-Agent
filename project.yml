@@ -1,0 +1,81 @@
+name: Axblade
+options:
+  bundleIdPrefix: io.primit
+  deploymentTarget:
+    macOS: "14.0"
+settings:
+  base:
+    ARCHS: arm64
+    SWIFT_VERSION: "6.0"
+    MACOSX_DEPLOYMENT_TARGET: "14.0"
+    DEVELOPMENT_TEAM: A2SZ953D3V
+    CODE_SIGN_STYLE: Automatic
+    MARKETING_VERSION: "0.3.1"
+    CURRENT_PROJECT_VERSION: "4"
+targets:
+  Axblade:
+    type: application
+    platform: macOS
+    # 产品名(菜单栏 / Dock / .app 文件名)是 ChillSkill;目标名/仓库沿用内部代号 Axblade
+    productName: ChillSkill
+    sources: [Axblade]
+    info:
+      path: Axblade/App/Info.plist
+      properties:
+        CFBundleDisplayName: ChillSkill
+        CFBundleIconName: AppIcon
+        NSHumanReadableCopyright: "© 2026 Primit"
+        LSMinimumSystemVersion: "14.0"
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        LSApplicationCategoryType: public.app-category.finance
+        ITSAppUsesNonExemptEncryption: false
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: io.primit.axblade
+        # 产品名 ChillSkill(与上面的 productName 一致);模块名保持 Axblade,代码 / 测试 @testable import 不变
+        PRODUCT_NAME: ChillSkill
+        PRODUCT_MODULE_NAME: Axblade
+        ENABLE_HARDENED_RUNTIME: true
+        CODE_SIGN_IDENTITY: "Apple Development"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+      configs:
+        # Debug 走 ad-hoc:xctest bundle 也是免签的,宿主一旦带 Team ID
+        # 两者 Team 不一致,测试 bundle 会 dlopen 失败(Different Team IDs)。
+        # 这样 ./scripts/test.sh 在没有证书的机器上也能跑。
+        Debug:
+          CODE_SIGN_IDENTITY: "-"
+          CODE_SIGN_STYLE: Manual
+          DEVELOPMENT_TEAM: ""
+          # ad-hoc 签名的 app 带着 applesignin 这类需要描述文件背书的
+          # entitlement 会被系统拒绝启动,所以 Debug 只留沙盒 + 出网。
+          # 代价:Debug 构建里「通过 Apple 登录」用不了(会走 needsSignedBuild 提示)。
+          CODE_SIGN_ENTITLEMENTS: Axblade/App/Axblade.entitlements
+        Release:
+          # archive 时由 ExportOptions 决定最终的分发签名(App Store / Developer ID)
+          CODE_SIGN_IDENTITY: "Apple Development"
+          CODE_SIGN_STYLE: Automatic
+          DEVELOPMENT_TEAM: A2SZ953D3V
+          # Sign in with Apple 只在正式签名的构建里开:自动签名会顺带把
+          # capability 注册到 App ID 上(release.sh 带 -allowProvisioningUpdates)。
+          CODE_SIGN_ENTITLEMENTS: Axblade/App/Axblade-Release.entitlements
+  AxbladeTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources: [AxbladeTests]
+    dependencies:
+      - target: Axblade
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: true
+        PRODUCT_BUNDLE_IDENTIFIER: io.primit.axblade.tests
+        CODE_SIGN_IDENTITY: "-"
+        CODE_SIGN_STYLE: Manual
+        DEVELOPMENT_TEAM: ""
+schemes:
+  Axblade:
+    build:
+      targets:
+        Axblade: all
+    test:
+      targets: [AxbladeTests]

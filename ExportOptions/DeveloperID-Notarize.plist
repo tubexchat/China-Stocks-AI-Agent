@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>method</key><string>developer-id</string>
+	<key>teamID</key><string>A2SZ953D3V</string>
+	<key>signingStyle</key><string>automatic</string>
+	<!-- upload = 交给 Apple 公证服务(用 Xcode 已登录账号),之后用 -exportNotarizedApp 取回 -->
+	<key>destination</key><string>upload</string>
+</dict>
+</plist>
