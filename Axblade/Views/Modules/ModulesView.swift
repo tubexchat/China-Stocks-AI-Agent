@@ -252,7 +252,7 @@ struct ChangeText: View {
         Text(pct.map(NumberFormat.percent) ?? "—")
             .monospacedDigit()
             .lineLimit(1)
-            .fixedSize()
+            .fixedSize(horizontal: false, vertical: true)
             .foregroundStyle(Theme.changeColor(pct))
     }
 }
@@ -266,7 +266,7 @@ struct MoneyText: View {
         Text(value.map { (signed && $0 > 0 ? "+" : "") + MoneyFormat.yuan($0) } ?? "—")
             .monospacedDigit()
             .lineLimit(1)
-            .fixedSize()
+            .fixedSize(horizontal: false, vertical: true)
             .foregroundStyle(signed ? Theme.changeColor(value) : Theme.text)
     }
 }
@@ -307,7 +307,7 @@ struct Chip: View {
         Text(text)
             .font(.caption)
             .lineLimit(1)
-            .fixedSize()
+            .fixedSize(horizontal: false, vertical: true)
             .foregroundStyle(foreground)
             .padding(.horizontal, 7)
             .padding(.vertical, 3)

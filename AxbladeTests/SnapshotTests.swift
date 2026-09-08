@@ -154,6 +154,9 @@ final class SnapshotTests: XCTestCase {
         @ViewBuilder content: () -> some View
     ) throws {
         let hosting = NSHostingView(rootView: AnyView(content()))
+        // 不让宿主按内容的理想尺寸伸展:CI runner 的字体略宽,某行固定元素多 3px 就会把位图撑宽,
+        // 快照要验的是「给定尺寸下画得出来」,尺寸本身必须固定。
+        hosting.sizingOptions = []
         hosting.frame = CGRect(origin: .zero, size: size)
 
         let window = NSWindow(
