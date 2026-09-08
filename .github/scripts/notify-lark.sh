@@ -16,7 +16,7 @@ status = os.environ.get("STATUS", "success")   # success | warning | failure
 ok = status == "success"
 warn = status == "warning"
 prefix = "✅ " if ok else ("⚠️ " if warn else "❌ ")
-suffix = "成功" if ok else ("成功(未发布)" if warn else "失败")
+suffix = "成功" if ok else ("成功(有警告)" if warn else "失败")
 title = prefix + os.environ.get("TITLE", "构建") + suffix
 body = os.environ.get("BODY", "").replace("\\n", "\n")  # shell 里写的字面 \n → 真实换行
 elements = [{"tag": "div", "text": {"tag": "lark_md", "content": body}}]

@@ -49,7 +49,18 @@ xcodebuild build -project Axblade.xcodeproj -scheme Axblade -configuration Relea
 
 每次推 `main`,`.github/workflows/release.yml` 在 macOS runner 上:跑测试 → Release 构建 →
 `scripts/package-dmg.sh` 打 `AShareAgent-<版本>-<构建号>.dmg`(附 ZIP 与 `latest.json`)→
-发布到本仓库的 **GitHub Release**(tag `v<版本>-<构建号>`)→ Lark 群机器人通知(下载按钮直指 Release 附件)。
+发布到本仓库的 **GitHub Release**(tag `v<版本>-<构建号>`)→ **同步到 api-dev.pipai.org** →
+Lark 群机器人通知(按钮:官网下载 / DMG 直链 / GitHub Release)。
+
+用户在官网 **https://app.pipai.org** 点「Download for Mac」即拿到最新版:落地页请求后端
+`GET https://api-dev.pipai.org/v1/releases/latest`(后端仓库 `src/releases.py`),后端优先返回服务器
+`RELEASES_DIR`(默认 `/home/ubuntu/releases`)里的最新 `latest.json` 与 `/releases/<文件>` 直链;
+服务器上没有时回退到本仓库 GitHub Release 的附件直链,所以即使同步没配好,官网也能下到最新版(只是走 GitHub)。
+固定下载链接:`https://api-dev.pipai.org/v1/releases/latest/download`(302 到最新 DMG)。
+
+- 同步需要 secrets `SERVER_HOST` / `SERVER_USERNAME` / `SERVER_SSH_KEY`(与后端仓库同名,可设为组织级);
+  缺任一则跳过同步。可选 variables:`RELEASES_DIR`(服务器目录)、`RELEASES_KEEP`(保留最近几个版本,默认 5)。
+  同步后会回读线上 `/v1/releases/latest` 校验是否已是本次构建,不一致只告警(通常是后端还没部署 releases 接口)。
 
 - 配置 `MAC_SIGNING_P12_BASE64` + `MAC_SIGNING_P12_PASSWORD`(Developer ID Application 证书)则正式签名;
   再配 `NOTARY_KEY_P8_BASE64` + `NOTARY_KEY_ID` + `NOTARY_ISSUER_ID` 则公证并 staple。

@@ -1,7 +1,8 @@
 name: Release · AShareAgent.dmg
 
 # 每次推 main:测试 → Release 构建 → 打 DMG(有证书就正式签名+公证,没有就 ad-hoc)
-# → 发布到本仓库的 GitHub Release(tag v<版本>-<构建号>,附 DMG / ZIP / latest.json)→ Lark 通知
+# → 发布到本仓库的 GitHub Release(tag v<版本>-<构建号>,附 DMG / ZIP / latest.json)
+# → 同步到 api-dev.pipai.org(app.pipai.org 的下载按钮读 GET /v1/releases/latest,立刻拿到新版本)→ Lark 通知
 on:
   push:
     branches: [main]
@@ -121,6 +122,61 @@ jobs:
           echo "url=${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases/tag/${tag}" >> "$GITHUB_OUTPUT"
           echo "download=${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases/download/${tag}/${file}" >> "$GITHUB_OUTPUT"
 
+      # ---- 同步到 api-dev.pipai.org:DMG / ZIP / latest.json scp 到服务器 RELEASES_DIR(默认 /home/ubuntu/releases),
+      #      后端 GET /v1/releases/latest 读到即生效,app.pipai.org 的「Download for Mac」直链走自有服务器(国内快)。
+      #      需要 secrets:SERVER_HOST / SERVER_USERNAME / SERVER_SSH_KEY(与后端仓库同名,建议设为组织级 secrets);
+      #      缺任一则跳过,落地页自动回退到 GitHub Release 附件直链。----
+      - name: Sync to api-dev.pipai.org
+        id: sync
+        if: steps.release.outcome == 'success'
+        env:
+          HOST: ${{ secrets.SERVER_HOST }}
+          USER: ${{ secrets.SERVER_USERNAME }}
+          KEY: ${{ secrets.SERVER_SSH_KEY }}
+          DIR: ${{ vars.RELEASES_DIR || '/home/ubuntu/releases' }}
+          KEEP: ${{ vars.RELEASES_KEEP || 5 }}
+          API: https://api-dev.pipai.org
+        run: |
+          set -eu
+          if [ -z "${HOST:-}" ] || [ -z "${USER:-}" ] || [ -z "${KEY:-}" ]; then
+            echo "status=skipped" >> "$GITHUB_OUTPUT"
+            echo "::notice::未配置 SERVER_HOST / SERVER_USERNAME / SERVER_SSH_KEY,跳过同步;落地页回退到 GitHub 直链"
+            exit 0
+          fi
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$KEY" > ~/.ssh/release_key && chmod 600 ~/.ssh/release_key
+          SSH_OPTS="-i $HOME/.ssh/release_key -o StrictHostKeyChecking=accept-new -o ConnectTimeout=20"
+          meta=build/dmg/latest.json
+          ver=$(python3 -c 'import json;print(json.load(open("'"$meta"'"))["version"])')
+          file=$(python3 -c 'import json;print(json.load(open("'"$meta"'"))["file"])')
+          zip=$(python3 -c 'import json;print(json.load(open("'"$meta"'"))["zip_file"])')
+          tmp="$DIR/.incoming-$GITHUB_RUN_NUMBER"
+
+          ssh $SSH_OPTS "$USER@$HOST" "mkdir -p '$DIR' '$tmp'"
+          scp $SSH_OPTS "build/dmg/$file" "build/dmg/$zip" "$meta" "$USER@$HOST:$tmp/"
+          # 先落 DMG/ZIP 再换 latest.json,接口任何时刻读到的都是完整版本;最后只保留最近 KEEP 个版本
+          ssh $SSH_OPTS "$USER@$HOST" "set -e; cd '$DIR'
+            mv -f '$tmp/$file' '$tmp/$zip' .
+            cp -f '$file' AShareAgent-latest.dmg && cp -f '$zip' AShareAgent-latest.zip
+            mv -f '$tmp/latest.json' latest.json && rmdir '$tmp'
+            ls -t AShareAgent-*-*.dmg | tail -n +$((KEEP+1)) | xargs -r rm -f
+            ls -t AShareAgent-*-*.zip | tail -n +$((KEEP+1)) | xargs -r rm -f
+            ls -la"
+          echo "download=$API/releases/$file" >> "$GITHUB_OUTPUT"
+
+          # 线上验证:/v1/releases/latest 必须已经返回本次构建(后端未部署 releases 接口时给出警告,不算失败)
+          got=$(curl -sS --max-time 20 "$API/v1/releases/latest" \
+            | python3 -c 'import json,sys
+          try:
+              d=json.load(sys.stdin); print(d.get("version"),d.get("build"),d.get("source"),d.get("download_url"))
+          except Exception as e: print("unparsable",e)' || true)
+          echo "api → $got"
+          case "$got" in
+            "$ver $GITHUB_RUN_NUMBER server "*) echo "status=synced" >> "$GITHUB_OUTPUT" ;;
+            *) echo "::warning::文件已上传,但 $API/v1/releases/latest 尚未返回本次构建(后端 releases 接口未部署?)"
+               echo "status=uploaded-unverified" >> "$GITHUB_OUTPUT" ;;
+          esac
+
       - name: Lark 通知
         if: always()
         env:
@@ -131,6 +187,9 @@ jobs:
           O_RELEASE: ${{ steps.release.outcome }}
           RELEASE_URL: ${{ steps.release.outputs.url }}
           DOWNLOAD_URL: ${{ steps.release.outputs.download }}
+          SYNC_STATUS: ${{ steps.sync.outputs.status }}
+          SYNC_DOWNLOAD: ${{ steps.sync.outputs.download }}
+          O_SYNC: ${{ steps.sync.outcome }}
           IDENTITY: ${{ steps.cert.outputs.identity }}
         run: |
           set -u
@@ -146,10 +205,17 @@ jobs:
           else
             ver="?"; file="?"; size="?"; sha="?"; signed="?"
           fi
+          case "${SYNC_STATUS:-}" in
+            synced)              site="已同步,app.pipai.org 可直接下载(${SYNC_DOWNLOAD})" ;;
+            uploaded-unverified) site="已上传服务器,但 /v1/releases/latest 尚未返回本版(检查后端部署)" ;;
+            skipped)             site="未同步(缺 SERVER_* secrets),落地页走 GitHub 直链" ;;
+            *)                   site="同步失败(sync=${O_SYNC}),落地页仍是上一版" ;;
+          esac
           if [ "$O_RELEASE" = "success" ]; then
             STATUS=success
-            BODY="**应用**:A股智能体 (AShareAgent) for Mac\n**版本**:v${ver}(构建 #${GITHUB_RUN_NUMBER})· ${size} MB · ${signed}\n**文件**:${file}(sha256 ${sha}…)\n**提交**:${short} ${subject}\n**推送者**:${ACTOR}"
-            BUTTONS="下载 DMG|${DOWNLOAD_URL};GitHub Release|${RELEASE_URL};Actions|${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+            [ "${SYNC_STATUS:-}" = "synced" ] || STATUS=warning
+            BODY="**应用**:A股智能体 (AShareAgent) for Mac\n**版本**:v${ver}(构建 #${GITHUB_RUN_NUMBER})· ${size} MB · ${signed}\n**文件**:${file}(sha256 ${sha}…)\n**官网**:${site}\n**提交**:${short} ${subject}\n**推送者**:${ACTOR}"
+            BUTTONS="官网下载|https://app.pipai.org;下载 DMG|${SYNC_DOWNLOAD:-$DOWNLOAD_URL};GitHub Release|${RELEASE_URL};Actions|${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
           else
             STATUS=failure
             stage="测试"; [ "$O_TEST" = "success" ] && stage="打包"; [ "$O_PKG" = "success" ] && stage="发布 GitHub Release"
@@ -170,7 +236,7 @@ jobs:
           for f in build-test.log build-package.log; do [ -f "$f" ] && cp "$f" "/tmp/ci-logs/${f%.log}-${GITHUB_RUN_NUMBER}.log" || true; done
           { xcodebuild -version; sw_vers; } > "/tmp/ci-logs/env-${GITHUB_RUN_NUMBER}.txt" 2>&1 || true
           {
-            echo "steps: cert=${{ steps.cert.outcome }} pkg=${{ steps.pkg.outcome }} release=${{ steps.release.outcome }}"
+            echo "steps: cert=${{ steps.cert.outcome }} pkg=${{ steps.pkg.outcome }} release=${{ steps.release.outcome }} sync=${{ steps.sync.outcome }}"
           } > "/tmp/ci-logs/steps-${GITHUB_RUN_NUMBER}.txt"
           cd /tmp/ci-logs && git init -q -b ci-logs && git config user.email ci@users.noreply.github.com && git config user.name ci-logs
           git add -A && git commit -q -m "release logs run ${GITHUB_RUN_NUMBER} (${GITHUB_SHA})"
