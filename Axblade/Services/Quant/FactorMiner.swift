@@ -18,7 +18,7 @@ struct FactorReport: Equatable, Sendable {
 
     var promptText: String {
         let rows = rankings.map { r in
-            "\(r.name): IC \(MarketSnapshot.formatNumber(r.ic));多空分层日均收益差 \(RiskReport.percent(r.spread))"
+            "\(r.name): IC \(NumberFormat.number(r.ic));多空分层日均收益差 \(RiskReport.percent(r.spread))"
         }.joined(separator: "\n")
         return """
         【因子挖掘 · \(sourceName) · \(symbol) · 近\(days)日 · \(samples) 个样本】

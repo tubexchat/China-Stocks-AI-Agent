@@ -37,18 +37,6 @@ final class LocalizationTests: XCTestCase {
         XCTAssertEqual(AppLanguage.allCases, [.zh, .en])
     }
 
-    func testChatErrorsAreDescribedInTheActiveLanguage() {
-        let error = ChatServiceError.http(401, "unauthorized")
-
-        XCTAssertTrue(L10nStrings.zh.describe(error).contains("服务返回 HTTP 401"))
-        XCTAssertTrue(L10nStrings.en.describe(error).contains("HTTP 401"))
-        XCTAssertFalse(L10nStrings.en.describe(error).contains("服务"))
-
-        let stream = ChatServiceError.stream("overloaded")
-        XCTAssertTrue(L10nStrings.zh.describe(stream).contains("生成中断"))
-        XCTAssertTrue(L10nStrings.en.describe(stream).contains("interrupted"))
-    }
-
     func testFuyaoErrorsAreDescribedInTheActiveLanguage() {
         XCTAssertTrue(L10nStrings.zh.describe(FuyaoError.api(code: 2001, message: "x")).contains("2001"))
         XCTAssertTrue(L10nStrings.en.describe(FuyaoError.api(code: 2001, message: "x")).contains("invalid or expired"))
@@ -70,16 +58,9 @@ final class LocalizationTests: XCTestCase {
         }
     }
 
-    func testMarketSnapshotPromptTextFollowsLanguage() {
-        let snapshot = MarketSnapshot(
-            symbol: "600519.SH", name: "贵州茅台",
-            price: 1309.3, changePercent: -0.51,
-            closes: [], fetchedAt: Date(timeIntervalSince1970: 1_786_500_000)
-        )
-
-        XCTAssertTrue(snapshot.promptText(in: .zh).contains("【A股行情"))
-        XCTAssertTrue(snapshot.promptText(in: .en).contains("[A-share quote"))
-        // 无参版本保持中文,老调用与既有测试不受影响
-        XCTAssertEqual(snapshot.promptText, snapshot.promptText(in: .zh))
+    func testQuantErrorsAreDescribedInTheActiveLanguage() {
+        XCTAssertEqual(L10nStrings.zh.describe(QuantError.tooShort(minimum: 60)), "历史数据太短,至少需要 60 根日线")
+        XCTAssertTrue(L10nStrings.en.describe(QuantError.tooShort(minimum: 60)).contains("60"))
+        XCTAssertNotEqual(L10nStrings.zh.describe(QuantError.invalidParameter("x")), L10nStrings.en.describe(QuantError.invalidParameter("x")))
     }
 }

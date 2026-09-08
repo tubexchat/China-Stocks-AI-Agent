@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// 设置窗口:通用 / 账户 / 模型服务 / 数据源 四个标签。
+/// 设置窗口:通用 / 数据源 两个标签。
 struct SettingsView: View {
     @ObservedObject var viewModel: AppViewModel
 
@@ -8,10 +8,6 @@ struct SettingsView: View {
         TabView {
             GeneralSettingsView(viewModel: viewModel)
                 .tabItem { Label(viewModel.text.settingsGeneral, systemImage: "gearshape") }
-            AccountSettingsView(viewModel: viewModel)
-                .tabItem { Label(viewModel.text.settingsAccount, systemImage: "person.crop.circle") }
-            ModelsSettingsView(viewModel: viewModel)
-                .tabItem { Label(viewModel.text.settingsModels, systemImage: "sparkles") }
             DataSettingsView(viewModel: viewModel)
                 .tabItem { Label(viewModel.text.settingsData, systemImage: "cylinder.split.1x2") }
         }
@@ -20,7 +16,7 @@ struct SettingsView: View {
     }
 }
 
-/// 通用标签页:界面语言 + 智能体自动附带实时数据。
+/// 通用标签页:界面语言 + 模块默认参数。
 struct GeneralSettingsView: View {
     @ObservedObject var viewModel: AppViewModel
 
@@ -36,57 +32,22 @@ struct GeneralSettingsView: View {
             }
             .pickerStyle(.inline)
 
-            Section {
-                Toggle(viewModel.text.agentAutoContextLabel, isOn: Binding(
-                    get: { viewModel.settings.agentAutoContext },
-                    set: { viewModel.settings.agentAutoContext = $0 }
-                ))
-                Text(viewModel.text.agentAutoContextHint)
-                    .font(.caption)
-                    .foregroundStyle(Theme.muted)
-            }
-        }
-        .formStyle(.grouped)
-        .scrollContentBackground(.hidden)
-        .background(Theme.background)
-    }
-}
-
-/// 模型服务标签页:只在官方后端的固定模型间单选。
-struct ModelsSettingsView: View {
-    @ObservedObject var viewModel: AppViewModel
-
-    var body: some View {
-        Form {
-            Section(viewModel.text.modelSectionHeader) {
-                ForEach(viewModel.availableModels) { model in
-                    Button {
-                        viewModel.selectModel(model.alias)
-                    } label: {
-                        HStack {
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(model.displayName)
-                                    .foregroundStyle(Theme.text)
-                                Text(model.alias)
-                                    .font(.caption)
-                                    .foregroundStyle(Theme.muted)
-                            }
-                            Spacer()
-                            if viewModel.currentModel.alias == model.alias {
-                                Image(systemName: "checkmark")
-                                    .foregroundStyle(Theme.accent)
-                            }
-                        }
-                        .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
+            Section(viewModel.text.moduleDefaultsHeader) {
+                Picker(viewModel.text.sectorScopeLabel, selection: Binding(
+                    get: { viewModel.settings.sectorTag },
+                    set: { viewModel.setSectorTag($0) }
+                )) {
+                    Text(viewModel.text.sectorIndustry).tag("industry")
+                    Text(viewModel.text.sectorConcept).tag("cn_concept")
                 }
-            }
-
-            Section {
-                Text(viewModel.text.modelFooter)
-                    .font(.caption)
-                    .foregroundStyle(Theme.muted)
+                Picker(viewModel.text.watchWindow, selection: Binding(
+                    get: { viewModel.settings.watchDays },
+                    set: { viewModel.setWatchDays($0) }
+                )) {
+                    ForEach(AppSettings.watchDayOptions, id: \.self) { days in
+                        Text(String(format: viewModel.text.watchDaysFormat, days)).tag(days)
+                    }
+                }
             }
         }
         .formStyle(.grouped)

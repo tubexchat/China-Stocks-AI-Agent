@@ -42,7 +42,7 @@ struct LimitUpPulseView: View {
                         leadersCard(report)
                     }
                     poolsCard
-                    AnalyzeBar(viewModel: viewModel, report: report.promptText)
+                    ReportBar(report: report.promptText)
                 }
                 Spacer(minLength: 20)
             }
@@ -126,7 +126,7 @@ struct LimitUpPulseView: View {
                     }
                     VStack(alignment: .leading, spacing: 4) {
                         Text(text.promotionRate).font(.caption).foregroundStyle(Theme.muted)
-                        LineSeries(points: points.compactMap { p in p.promotionRate.map { .init(x: p.date, y: $0 * 100) } }, color: Theme.accentStrong, height: 100, yLabel: { MarketSnapshot.formatNumber($0) + "%" })
+                        LineSeries(points: points.compactMap { p in p.promotionRate.map { .init(x: p.date, y: $0 * 100) } }, color: Theme.accentStrong, height: 100, yLabel: { NumberFormat.number($0) + "%" })
                     }
                 }
                 if let ladder = model.ladder, let latest = ladder.item.first {

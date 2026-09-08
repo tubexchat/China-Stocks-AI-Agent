@@ -76,12 +76,12 @@ struct RiskReport: Equatable, Sendable {
         """
         【风控模型 · \(sourceName) · \(symbol) · 近\(days)日】
         单日 VaR(95%) \(Self.percent(var95));单日 VaR(99%) \(Self.percent(var99))
-        最大回撤 \(Self.percent(maxDrawdown));年化波动率 \(Self.percent(annualVol));夏普比率 \(MarketSnapshot.formatNumber(sharpe))
+        最大回撤 \(Self.percent(maxDrawdown));年化波动率 \(Self.percent(annualVol));夏普比率 \(NumberFormat.number(sharpe))
         """
     }
 
     static func percent(_ value: Double) -> String {
-        MarketSnapshot.formatNumber(value * 100) + "%"
+        NumberFormat.number(value * 100) + "%"
     }
 }
 

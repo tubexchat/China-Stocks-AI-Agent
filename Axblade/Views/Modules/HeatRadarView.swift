@@ -51,7 +51,7 @@ struct HeatRadarView: View {
                         }
                     }
                     anomaliesCard(report)
-                    AnalyzeBar(viewModel: viewModel, report: report.promptText)
+                    ReportBar(report: report.promptText)
                 }
                 Spacer(minLength: 20)
             }
@@ -103,7 +103,7 @@ struct HeatRadarView: View {
                 }
                 if let tag = point.anomalyTag { Chip(text: tag) }
                 Spacer()
-                Text(MarketSnapshot.formatNumber(point.heat)).font(.caption.monospacedDigit()).foregroundStyle(Theme.muted)
+                Text(NumberFormat.number(point.heat)).font(.caption.monospacedDigit()).foregroundStyle(Theme.muted)
             }
             .contentShape(Rectangle())
         }

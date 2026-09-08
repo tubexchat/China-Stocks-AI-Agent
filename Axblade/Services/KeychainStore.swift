@@ -1,13 +1,12 @@
 import Foundation
 import Security
 
-/// 登录等敏感凭据只存系统钥匙串,不进 JSON、不进 UserDefaults。
-/// 模型请求不需要任何客户端密钥(走官方后端 + 登录令牌),这里不存 APIKEY。
+/// 敏感凭据(自定义的数据 API Key)只存系统钥匙串,不进 JSON、不进 UserDefaults。
 enum KeychainStore {
     static let service = "io.primit.axblade"
 
     /// 返回 `SecItemAdd` 的状态码:写失败必须能被调用方看见,
-    /// 否则界面会显示「登录成功」而请求根本没有令牌。
+    /// 否则界面会显示「已保存」而请求根本没有 Key。
     @discardableResult
     static func setSecret(_ value: String, account: String) -> OSStatus {
         deleteSecret(account: account)

@@ -13,15 +13,15 @@ struct AxbladeApp: App {
         .defaultSize(width: 1240, height: 800)
         .windowResizability(.contentMinSize)
         .commands {
-            CommandGroup(replacing: .newItem) {
-                Button(viewModel.text.newChatMenu) { viewModel.newConversation() }
-                    .keyboardShortcut("n", modifiers: .command)
-            }
-            CommandMenu(viewModel.text.workspaceModules) {
+            CommandGroup(replacing: .newItem) {}
+            CommandMenu(viewModel.text.modulesHeader) {
                 ForEach(Array(AgentModule.allCases.enumerated()), id: \.element) { index, module in
                     Button(viewModel.text.moduleName(module)) { viewModel.openModule(module) }
                         .keyboardShortcut(KeyEquivalent(Character(String(index + 1))), modifiers: .command)
                 }
+                Divider()
+                Button(viewModel.text.backToModules) { viewModel.selectedModule = nil }
+                    .keyboardShortcut("0", modifiers: .command)
             }
         }
 
@@ -41,13 +41,8 @@ struct RootView: View {
             SidebarView(viewModel: viewModel)
                 .navigationSplitViewColumnWidth(min: 200, ideal: 250, max: 340)
         } detail: {
-            switch viewModel.workspace {
-            case .chat:
-                ChatView(viewModel: viewModel)
-            case .modules:
-                ModulesView(viewModel: viewModel)
-                    .navigationTitle(viewModel.selectedModule.map { viewModel.text.moduleName($0) } ?? viewModel.text.modulesHeader)
-            }
+            ModulesView(viewModel: viewModel)
+                .navigationTitle(viewModel.selectedModule.map { viewModel.text.moduleName($0) } ?? viewModel.text.appName)
         }
         .background(Theme.background)
     }

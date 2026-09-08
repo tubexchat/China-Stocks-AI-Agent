@@ -12,7 +12,7 @@ struct HorizontalBars: View {
 
     let items: [Item]
     var color: Color = Theme.accent
-    var valueLabel: (Double) -> String = { MarketSnapshot.formatNumber($0) }
+    var valueLabel: (Double) -> String = { NumberFormat.number($0) }
 
     var body: some View {
         Chart(items) { item in
@@ -48,7 +48,7 @@ struct VerticalBars: View {
                 .foregroundStyle(item.color ?? color)
                 .cornerRadius(3)
                 .annotation(position: .top, spacing: 2) {
-                    Text(MarketSnapshot.formatNumber(item.value))
+                    Text(NumberFormat.number(item.value))
                         .font(.caption2.monospacedDigit())
                         .foregroundStyle(Theme.muted)
                 }
@@ -75,7 +75,7 @@ struct LineSeries: View {
     let points: [Point]
     var color: Color = Theme.accent
     var height: CGFloat = 120
-    var yLabel: (Double) -> String = { MarketSnapshot.formatNumber($0) }
+    var yLabel: (Double) -> String = { NumberFormat.number($0) }
     var reversed = false
 
     /// 类别轴不会自动抽稀,最多留 5 个刻度。
@@ -207,7 +207,7 @@ struct RadarCanvas: View {
                     }
                     .buttonStyle(.plain)
                     .position(position)
-                    .help("\(point.name) 热度 \(MarketSnapshot.formatNumber(point.heat))\(point.anomalyTag.map { " · \($0)" } ?? "")")
+                    .help("\(point.name) 热度 \(NumberFormat.number(point.heat))\(point.anomalyTag.map { " · \($0)" } ?? "")")
                 }
             }
         }
@@ -303,5 +303,27 @@ struct TopologyCanvas: View {
                 .foregroundStyle(active ? Theme.changeColor(node.net) : Theme.disabled)
         }
         .fixedSize()
+    }
+}
+
+/// 迷你折线。
+struct SparkLine: View {
+    let values: [Double]
+    var color: Color = Theme.accent
+
+    var body: some View {
+        GeometryReader { geo in
+            if let min = values.min(), let max = values.max(), values.count > 1 {
+                let range = max - min == 0 ? 1 : max - min
+                Path { path in
+                    for (index, value) in values.enumerated() {
+                        let x = geo.size.width * CGFloat(index) / CGFloat(values.count - 1)
+                        let y = geo.size.height * (1 - CGFloat((value - min) / range))
+                        index == 0 ? path.move(to: CGPoint(x: x, y: y)) : path.addLine(to: CGPoint(x: x, y: y))
+                    }
+                }
+                .stroke(color, style: StrokeStyle(lineWidth: 1.5, lineCap: .round, lineJoin: .round))
+            }
+        }
     }
 }

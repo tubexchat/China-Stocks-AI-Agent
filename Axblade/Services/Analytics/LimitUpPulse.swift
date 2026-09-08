@@ -92,9 +92,9 @@ enum MoneyFormat {
     static func yuan(_ value: Double) -> String {
         let absValue = abs(value)
         let sign = value < 0 ? "-" : ""
-        if absValue >= 1e8 { return sign + MarketSnapshot.formatNumber(absValue / 1e8) + "亿" }
-        if absValue >= 1e4 { return sign + MarketSnapshot.formatNumber((absValue / 1e4).rounded()) + "万" }
-        return sign + MarketSnapshot.formatNumber(absValue)
+        if absValue >= 1e8 { return sign + NumberFormat.number(absValue / 1e8) + "亿" }
+        if absValue >= 1e4 { return sign + NumberFormat.number((absValue / 1e4).rounded()) + "万" }
+        return sign + NumberFormat.number(absValue)
     }
 }
 

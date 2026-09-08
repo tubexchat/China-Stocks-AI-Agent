@@ -37,7 +37,7 @@ struct DragonTigerTopologyView: View {
                         conceptsCard(graph)
                     }
                     edgesCard(graph)
-                    AnalyzeBar(viewModel: viewModel, report: graph.promptText)
+                    ReportBar(report: graph.promptText)
                 }
                 Spacer(minLength: 20)
             }
@@ -67,7 +67,7 @@ struct DragonTigerTopologyView: View {
             HStack(spacing: 14) {
                 KPITile(label: text.netBuy, value: MoneyFormat.yuan(node.net), color: Theme.changeColor(node.net))
                 if let change = node.change {
-                    KPITile(label: text.change, value: MarketSnapshot.formatPercent(change * 100), color: Theme.changeColor(change))
+                    KPITile(label: text.change, value: NumberFormat.percent(change * 100), color: Theme.changeColor(change))
                 }
             }
             ForEach(edges.prefix(20)) { edge in

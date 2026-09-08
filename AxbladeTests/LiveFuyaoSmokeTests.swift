@@ -14,13 +14,10 @@ final class LiveFuyaoSmokeTests: XCTestCase {
 
     private func makeViewModel() -> AppViewModel {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent("AxbladeLive-\(UUID().uuidString)")
-        let viewModel = AppViewModel(
-            store: ConversationStore(directory: directory),
-            accountService: AccountService(tokenProvider: { nil }),
+        return AppViewModel(
+            store: SettingsStore(directory: directory),
             researchStore: MarketResearchStore(directory: directory.appendingPathComponent("research"))
         )
-        viewModel.accountTask?.cancel()
-        return viewModel
     }
 
     func testLimitUpPulseLive() async throws {
@@ -87,12 +84,5 @@ final class LiveFuyaoSmokeTests: XCTestCase {
         XCTAssertNil(viewModel.marketTrend.stockError)
         XCTAssertEqual(viewModel.marketTrend.stockName, "贵州茅台")
         print("LIVE 个股:", viewModel.marketTrend.stockPromptText?.prefix(300) ?? "")
-    }
-
-    func testAgentContextLive() async throws {
-        let viewModel = makeViewModel()
-        let context = await viewModel.contextBuilder.build(for: "分析一下 600519,今天竞价风向标怎么样", language: .zh)
-        print("LIVE 上下文:", context.labels, context.text.prefix(300))
-        XCTAssertTrue(context.labels.contains("600519.SH 贵州茅台"))
     }
 }

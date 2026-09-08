@@ -357,14 +357,14 @@ final class MarketTrendModel: ModuleModel {
         }
     }
 
-    /// 个股研究汇总,交给 AI 解读。
+    /// 个股研究汇总(复制报告用)。
     var stockPromptText: String? {
         guard let metrics = stockMetrics else { return nil }
         let code = AShareSymbol.normalize(stockSymbol)
         let title = stockName.map { "\(code)(\($0))" } ?? code
         var lines = ["【个股趋势研究 · \(title) · \(stockBars.count) 根日线(前复权)】"]
-        lines.append("最新 \(MarketSnapshot.formatNumber(metrics.last));1日 \(RiskReport.percent(metrics.ret1));5日 \(RiskReport.percent(metrics.ret5));20日 \(RiskReport.percent(metrics.ret20));60日 \(RiskReport.percent(metrics.ret60))")
-        lines.append("MA5 \(metrics.ma5.map(MarketSnapshot.formatNumber) ?? "—") / MA20 \(metrics.ma20.map(MarketSnapshot.formatNumber) ?? "—") / MA60 \(metrics.ma60.map(MarketSnapshot.formatNumber) ?? "—");\(metrics.bullishAlignment ? "多头排列" : (metrics.bearishAlignment ? "空头排列" : "均线交织"));MA20 斜率 \(RiskReport.percent(metrics.ma20Slope));60 日区间位置 \(RiskReport.percent(metrics.rangePosition));趋势分 \(metrics.score)")
+        lines.append("最新 \(NumberFormat.number(metrics.last));1日 \(RiskReport.percent(metrics.ret1));5日 \(RiskReport.percent(metrics.ret5));20日 \(RiskReport.percent(metrics.ret20));60日 \(RiskReport.percent(metrics.ret60))")
+        lines.append("MA5 \(metrics.ma5.map(NumberFormat.number) ?? "—") / MA20 \(metrics.ma20.map(NumberFormat.number) ?? "—") / MA60 \(metrics.ma60.map(NumberFormat.number) ?? "—");\(metrics.bullishAlignment ? "多头排列" : (metrics.bearishAlignment ? "空头排列" : "均线交织"));MA20 斜率 \(RiskReport.percent(metrics.ma20Slope));60 日区间位置 \(RiskReport.percent(metrics.rangePosition));趋势分 \(metrics.score)")
         if let risk = stockRisk { lines.append(risk.promptText) }
         if let backtest = stockBacktest { lines.append(backtest.promptText) }
         if let forecast = stockForecast { lines.append(forecast.promptText) }

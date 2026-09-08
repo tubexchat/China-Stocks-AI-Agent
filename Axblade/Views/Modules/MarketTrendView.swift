@@ -38,7 +38,7 @@ struct MarketTrendView: View {
                         sectorList(text.weakestSectors, report.weakest.prefix(15).map { $0 })
                     }
                     rotationCard(report)
-                    AnalyzeBar(viewModel: viewModel, report: report.promptText)
+                    ReportBar(report: report.promptText)
                 } else if !model.isLoading {
                     Text(text.cacheEmptyHint).font(.callout).foregroundStyle(Theme.muted)
                         .padding(16).frame(maxWidth: .infinity, alignment: .leading)
@@ -75,7 +75,7 @@ struct MarketTrendView: View {
                         HStack {
                             Text(index.name).font(.callout.weight(.medium)).foregroundStyle(Theme.text)
                             Spacer()
-                            Text(MarketSnapshot.formatNumber(index.metrics.last)).font(.callout.monospacedDigit()).foregroundStyle(Theme.text)
+                            Text(NumberFormat.number(index.metrics.last)).font(.callout.monospacedDigit()).foregroundStyle(Theme.text)
                         }
                         SparkLine(values: index.closes.suffix(60).map { $0 }, color: Theme.changeColor(index.metrics.ret20)).frame(height: 34)
                         HStack(spacing: 8) {
@@ -102,7 +102,7 @@ struct MarketTrendView: View {
                     KPITile(label: text.breadthUp, value: "\(breadth.up)", color: Theme.up, caption: "≥9.5%: \(breadth.limitUpLike)")
                     KPITile(label: text.breadthDown, value: "\(breadth.down)", color: Theme.down, caption: "≤-9.5%: \(breadth.limitDownLike)")
                     KPITile(label: text.breadthFlat, value: "\(breadth.flat)")
-                    KPITile(label: text.breadthMedian, value: MarketSnapshot.formatPercent(breadth.medianChange), color: Theme.changeColor(breadth.medianChange))
+                    KPITile(label: text.breadthMedian, value: NumberFormat.percent(breadth.medianChange), color: Theme.changeColor(breadth.medianChange))
                     KPITile(label: text.breadthTurnover, value: MoneyFormat.yuan(breadth.totalTurnover))
                     KPITile(label: text.breadthConcentration, value: RiskReport.percent(breadth.top100TurnoverShare))
                 }
@@ -127,7 +127,7 @@ struct MarketTrendView: View {
                         }
                         if history.count >= 2 {
                             Text(text.breadthHistory).font(.caption).foregroundStyle(Theme.muted).padding(.top, 6)
-                            LineSeries(points: history.suffix(60).map { .init(x: $0.date, y: $0.upRatio * 100) }, color: Theme.accent, height: 80, yLabel: { MarketSnapshot.formatNumber($0) + "%" })
+                            LineSeries(points: history.suffix(60).map { .init(x: $0.date, y: $0.upRatio * 100) }, color: Theme.accent, height: 80, yLabel: { NumberFormat.number($0) + "%" })
                         }
                     }
                     .frame(width: 360)
@@ -185,7 +185,7 @@ struct MarketTrendView: View {
                     HStack(spacing: 3) {
                         Text(sector.name).font(.caption).foregroundStyle(Theme.text).frame(width: 100, alignment: .leading).lineLimit(1)
                         ForEach(Array(sector.recentReturns.suffix(dates.count).enumerated()), id: \.offset) { _, value in
-                            HeatCell(value: value, scale: 0.04, text: MarketSnapshot.formatPercent(value * 100))
+                            HeatCell(value: value, scale: 0.04, text: NumberFormat.percent(value * 100))
                                 .frame(height: 20)
                         }
                     }
@@ -212,7 +212,7 @@ struct MarketTrendView: View {
             }
             if let metrics = model.stockMetrics {
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 130), spacing: 10)], spacing: 10) {
-                    KPITile(label: text.price, value: MarketSnapshot.formatNumber(metrics.last))
+                    KPITile(label: text.price, value: NumberFormat.number(metrics.last))
                     KPITile(label: text.trendScore, value: "\(metrics.score)", color: metrics.score >= 60 ? Theme.up : (metrics.score < 40 ? Theme.down : Theme.text))
                     KPITile(label: text.ret20, value: RiskReport.percent(metrics.ret20), color: Theme.changeColor(metrics.ret20))
                     KPITile(label: text.ret60, value: RiskReport.percent(metrics.ret60), color: Theme.changeColor(metrics.ret60))
@@ -221,7 +221,7 @@ struct MarketTrendView: View {
                     KPITile(label: text.maxDrawdown, value: RiskReport.percent(metrics.maxDrawdown60))
                     if let risk = model.stockRisk {
                         KPITile(label: text.var95, value: RiskReport.percent(risk.var95))
-                        KPITile(label: text.sharpe, value: MarketSnapshot.formatNumber(risk.sharpe))
+                        KPITile(label: text.sharpe, value: NumberFormat.number(risk.sharpe))
                     }
                     if let backtest = model.stockBacktest {
                         KPITile(label: "\(text.backtestName) MA5/20", value: RiskReport.percent(backtest.strategyReturn), color: Theme.changeColor(backtest.strategyReturn), caption: "\(text.holdReturn) \(RiskReport.percent(backtest.holdReturn))")
@@ -236,11 +236,11 @@ struct MarketTrendView: View {
                     HStack(spacing: 6) {
                         Text(text.factorToolName).font(.caption).foregroundStyle(Theme.muted)
                         ForEach(factors.rankings.prefix(5), id: \.name) { ranking in
-                            Chip(text: "\(ranking.name) IC \(MarketSnapshot.formatNumber(ranking.ic))")
+                            Chip(text: "\(ranking.name) IC \(NumberFormat.number(ranking.ic))")
                         }
                     }
                 }
-                AnalyzeBar(viewModel: viewModel, report: model.stockPromptText)
+                ReportBar(report: model.stockPromptText)
             }
         }
     }

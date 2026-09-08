@@ -1,4 +1,5 @@
 import SwiftUI
+import AppKit
 
 /// 盘面工作区:模块卡列表 → 模块页。选中项存 ViewModel,与侧栏联动。
 struct ModulesView: View {
@@ -185,20 +186,28 @@ struct SectionCard<Content: View>: View {
     }
 }
 
-/// 「让 AI 解读」+ 免责声明。
-struct AnalyzeBar: View {
-    @ObservedObject var viewModel: AppViewModel
+/// 「复制报告」+ 免责声明:把本地算好的文字报告放进剪贴板,方便贴给任何模型或笔记。
+struct ReportBar: View {
     let report: String?
+    @Environment(\.l10n) private var l10n
+    @State private var copied = false
 
     var body: some View {
         HStack {
             Button {
-                if let report { viewModel.analyze(report: report) }
+                guard let report else { return }
+                NSPasteboard.general.clearContents()
+                NSPasteboard.general.setString(report, forType: .string)
+                copied = true
+                Task { @MainActor in
+                    try? await Task.sleep(for: .seconds(1.5))
+                    copied = false
+                }
             } label: {
-                Label(viewModel.text.analyzeWithAI, systemImage: "sparkles")
+                Label(copied ? l10n.copied : l10n.copyReport, systemImage: copied ? "checkmark" : "doc.on.doc")
             }
             .disabled(report == nil)
-            Text(viewModel.text.disclaimer)
+            Text(l10n.disclaimer)
                 .font(.caption)
                 .foregroundStyle(Theme.muted)
             Spacer()
@@ -240,7 +249,7 @@ struct ChangeText: View {
 
     var body: some View {
         let pct = value.map { isPercent ? $0 : $0 * 100 }
-        Text(pct.map(MarketSnapshot.formatPercent) ?? "—")
+        Text(pct.map(NumberFormat.percent) ?? "—")
             .monospacedDigit()
             .lineLimit(1)
             .fixedSize()

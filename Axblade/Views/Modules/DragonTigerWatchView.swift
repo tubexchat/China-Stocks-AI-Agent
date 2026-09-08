@@ -47,7 +47,7 @@ struct DragonTigerWatchView: View {
                         stockDetail(stock, report)
                     }
                     rowsCard(report)
-                    AnalyzeBar(viewModel: viewModel, report: report.promptText)
+                    ReportBar(report: report.promptText)
                 }
                 Spacer(minLength: 20)
             }

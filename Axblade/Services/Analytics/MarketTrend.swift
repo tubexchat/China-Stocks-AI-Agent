@@ -216,13 +216,13 @@ struct MarketTrendReport: Equatable, Sendable {
     }
 
     var promptText: String {
-        let idx = indices.map { "\($0.name) \(MarketSnapshot.formatNumber($0.metrics.last)) 20日\(RiskReport.percent($0.metrics.ret20)) 60日\(RiskReport.percent($0.metrics.ret60)) \($0.metrics.bullishAlignment ? "多头排列" : ($0.metrics.bearishAlignment ? "空头排列" : "均线交织"))" }.joined(separator: ";")
+        let idx = indices.map { "\($0.name) \(NumberFormat.number($0.metrics.last)) 20日\(RiskReport.percent($0.metrics.ret20)) 60日\(RiskReport.percent($0.metrics.ret60)) \($0.metrics.bullishAlignment ? "多头排列" : ($0.metrics.bearishAlignment ? "空头排列" : "均线交织"))" }.joined(separator: ";")
         let strong = strongest.prefix(10).map { "\($0.name)(分\($0.score),20日\(RiskReport.percent($0.metrics.ret20)))" }.joined(separator: ";")
         let weak = weakest.prefix(8).map { "\($0.name)(分\($0.score),20日\(RiskReport.percent($0.metrics.ret20)))" }.joined(separator: ";")
         var lines = ["【本地全市场趋势研究 · \(ShanghaiDate.dayFormatter.string(from: generatedAt))】", "大盘状态:\(regime);指数:\(idx)"]
         if let breadth {
-            lines.append("市场宽度(\(breadth.date)):上涨 \(breadth.up) / 下跌 \(breadth.down) / 平盘 \(breadth.flat),涨幅≥9.5% \(breadth.limitUpLike) 家,跌幅≥9.5% \(breadth.limitDownLike) 家;中位涨跌 \(MarketSnapshot.formatPercent(breadth.medianChange));总成交 \(MoneyFormat.yuan(breadth.totalTurnover)),前 100 只成交占比 \(RiskReport.percent(breadth.top100TurnoverShare))")
-            lines.append("各板块:" + breadth.boards.map { "\($0.board) 涨\($0.up)/跌\($0.down) 中位\(MarketSnapshot.formatPercent($0.medianChange))" }.joined(separator: ";"))
+            lines.append("市场宽度(\(breadth.date)):上涨 \(breadth.up) / 下跌 \(breadth.down) / 平盘 \(breadth.flat),涨幅≥9.5% \(breadth.limitUpLike) 家,跌幅≥9.5% \(breadth.limitDownLike) 家;中位涨跌 \(NumberFormat.percent(breadth.medianChange));总成交 \(MoneyFormat.yuan(breadth.totalTurnover)),前 100 只成交占比 \(RiskReport.percent(breadth.top100TurnoverShare))")
+            lines.append("各板块:" + breadth.boards.map { "\($0.board) 涨\($0.up)/跌\($0.down) 中位\(NumberFormat.percent($0.medianChange))" }.joined(separator: ";"))
         }
         if breadthHistory.count >= 2 {
             lines.append("宽度历史(上涨占比):" + breadthHistory.suffix(10).map { "\($0.date.suffix(5)) \(RiskReport.percent($0.upRatio))" }.joined(separator: " "))
@@ -286,7 +286,7 @@ final class MarketResearchStore: Sendable {
     }
 
     static func defaultDirectory() -> URL {
-        ConversationStore.defaultDirectory().appendingPathComponent("research", isDirectory: true)
+        SettingsStore.defaultDirectory().appendingPathComponent("research", isDirectory: true)
     }
 
     private func url(_ name: String) -> URL { directory.appendingPathComponent(name) }
