@@ -85,17 +85,23 @@ final class AccountModelsTests: XCTestCase {
         let settings = try JSONCoding.decoder().decode(AppSettings.self, from: Data(legacy.utf8))
 
         XCTAssertEqual(settings.modelAlias, Backend.defaultModelAlias)
-        XCTAssertTrue(settings.disabledSources.isEmpty)
+        XCTAssertTrue(settings.agentAutoContext)
     }
 
-    func testDisabledSourcesRoundTrip() throws {
+    func testAgentSettingsRoundTripAndClampWildValues() throws {
         var settings = AppSettings()
-        settings.disabledSources = [.okx, .krStock]
+        settings.agentAutoContext = false
+        settings.sectorTag = "cn_concept"
+        settings.watchDays = 10
 
         let data = try JSONCoding.encoder().encode(settings)
         let decoded = try JSONCoding.decoder().decode(AppSettings.self, from: data)
+        XCTAssertEqual(decoded, settings)
 
-        XCTAssertEqual(decoded.disabledSources, [.okx, .krStock])
+        let wild = Data(#"{"modelAlias":"deepseek","sectorTag":"nope","watchDays":42}"#.utf8)
+        let clamped = try JSONCoding.decoder().decode(AppSettings.self, from: wild)
+        XCTAssertEqual(clamped.sectorTag, "industry")
+        XCTAssertEqual(clamped.watchDays, 5)
     }
 }
 

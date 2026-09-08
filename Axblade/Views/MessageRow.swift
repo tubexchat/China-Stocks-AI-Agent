@@ -14,16 +14,38 @@ struct MessageRow: View {
         }
     }
 
+    @Environment(\.l10n) private var l10n
+
     private var userBubble: some View {
         HStack {
             Spacer(minLength: 60)
-            Text(message.content)
-                .textSelection(.enabled)
-                .foregroundStyle(Theme.text)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 10)
-                .background(Theme.surface)
-                .clipShape(RoundedRectangle(cornerRadius: 8))
+            VStack(alignment: .trailing, spacing: 6) {
+                if !message.content.isEmpty {
+                    Text(message.content)
+                        .textSelection(.enabled)
+                        .foregroundStyle(Theme.text)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 10)
+                        .background(Theme.surface)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                }
+                if !message.contextLabels.isEmpty {
+                    // 智能体自动附带的数据块只显示来源标签,不把整块数据铺在气泡里。
+                    HStack(spacing: 5) {
+                        Image(systemName: "bolt.horizontal.circle")
+                            .font(.system(size: 10))
+                        Text(String(format: l10n.contextAttachedFormat, message.contextLabels.joined(separator: " · ")))
+                            .font(.caption)
+                            .lineLimit(2)
+                    }
+                    .foregroundStyle(Theme.muted)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(Theme.accentSoft)
+                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                    .help(message.context ?? "")
+                }
+            }
         }
     }
 
@@ -31,7 +53,7 @@ struct MessageRow: View {
         HStack(alignment: .top, spacing: 12) {
             if message.isError {
                 Image(systemName: "exclamationmark.triangle.fill")
-                    .foregroundStyle(Theme.down)
+                    .foregroundStyle(Theme.danger)
                     .frame(width: 24, height: 24)
             } else {
                 BrandMark(size: 24)
@@ -56,11 +78,11 @@ struct MessageRow: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(message.isError ? 12 : 0)
-            .background(message.isError ? Theme.down.opacity(0.08) : .clear)
+            .background(message.isError ? Theme.danger.opacity(0.08) : .clear)
             .clipShape(RoundedRectangle(cornerRadius: 8))
             .overlay {
                 if message.isError {
-                    RoundedRectangle(cornerRadius: 8).stroke(Theme.down.opacity(0.55), lineWidth: 1)
+                    RoundedRectangle(cornerRadius: 8).stroke(Theme.danger.opacity(0.55), lineWidth: 1)
                 }
             }
         }

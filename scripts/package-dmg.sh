@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# 打包 ChillSkill.dmg(本地与 CI 共用)。
+# 打包 AShareAgent.dmg(本地与 CI 共用)。
 #
 # 用法:
 #   scripts/package-dmg.sh [--build N] [--identity "<签名身份>"|-] [--entitlements <plist>] [--out <dir>]
 #                          [--notary-key <p8> --notary-key-id <id> --notary-issuer <uuid>]
 # 产物(默认 build/dmg/):
-#   ChillSkill-<version>-<build>.dmg   ChillSkill-latest.dmg   latest.json
+#   AShareAgent-<version>-<build>.dmg   AShareAgent-latest.dmg   latest.json
 #
 # - --identity 默认 "-"(ad-hoc:可运行,但 Gatekeeper 需右键打开);传 "Developer ID Application: …" 则正式签名
 # - --entitlements 默认 Axblade/App/Axblade.entitlements(不含 Sign in with Apple:该权限需要描述文件,
@@ -64,7 +64,7 @@ xcodebuild build -project Axblade.xcodeproj -scheme Axblade -configuration Relea
   CURRENT_PROJECT_VERSION="$BUILD" CODE_SIGN_ENTITLEMENTS="$ENTITLEMENTS" \
   ENABLE_HARDENED_RUNTIME=YES OTHER_CODE_SIGN_FLAGS="--timestamp=none" \
   "${SIGN_ARGS[@]}" 2>&1 | grep -E "error:|warning: .*(sign|entitle)|BUILD (SUCCEEDED|FAILED)" | tail -5
-APP="$DERIVED/Build/Products/Release/ChillSkill.app"
+APP="$DERIVED/Build/Products/Release/AShareAgent.app"
 [ -d "$APP" ] || { echo "构建产物不存在:$APP" >&2; exit 1; }
 
 if [ "$IDENTITY" != "-" ]; then
@@ -76,12 +76,12 @@ fi  # PREBUILT_APP
 codesign --verify --deep --strict "$APP"
 echo "== signature: $(codesign -dvv "$APP" 2>&1 | grep -E "^Authority=" | head -1 || echo adhoc)"
 
-DMG_NAME="ChillSkill-$VERSION-$BUILD.dmg"
+DMG_NAME="AShareAgent-$VERSION-$BUILD.dmg"
 echo "== hdiutil → $OUT/$DMG_NAME"
 cp -R "$APP" "$STAGE/"
 ln -s /Applications "$STAGE/Applications"
 rm -f "$OUT/$DMG_NAME"
-hdiutil create -volname "ChillSkill" -srcfolder "$STAGE" -ov -format UDZO -fs HFS+ "$OUT/$DMG_NAME" >/dev/null
+hdiutil create -volname "AShareAgent" -srcfolder "$STAGE" -ov -format UDZO -fs HFS+ "$OUT/$DMG_NAME" >/dev/null
 if [ "$IDENTITY" != "-" ]; then
   codesign --force --timestamp --sign "$IDENTITY" "$OUT/$DMG_NAME"
 fi
@@ -106,15 +106,15 @@ elif [ "$IDENTITY" != "-" ] && xcrun notarytool history --keychain-profile AC_NO
   NOTARIZED=true; APP_NOTARIZED=true
 fi
 
-cp -f "$OUT/$DMG_NAME" "$OUT/ChillSkill-latest.dmg"
+cp -f "$OUT/$DMG_NAME" "$OUT/AShareAgent-latest.dmg"
 SHA="$(shasum -a 256 "$OUT/$DMG_NAME" | awk '{print $1}')"
 SIZE="$(stat -f %z "$OUT/$DMG_NAME")"
 
 # 同时出一个 ZIP:zip 不是"容器",Gatekeeper 只评估里面的 app(已公证则双击即用),不受 DMG 是否公证影响
-ZIP_NAME="ChillSkill-$VERSION-$BUILD.zip"
+ZIP_NAME="AShareAgent-$VERSION-$BUILD.zip"
 echo "== ditto → $OUT/$ZIP_NAME"
 rm -f "$OUT/$ZIP_NAME"; ditto -c -k --keepParent "$APP" "$OUT/$ZIP_NAME"
-cp -f "$OUT/$ZIP_NAME" "$OUT/ChillSkill-latest.zip"
+cp -f "$OUT/$ZIP_NAME" "$OUT/AShareAgent-latest.zip"
 ZIP_SHA="$(shasum -a 256 "$OUT/$ZIP_NAME" | awk '{print $1}')"
 ZIP_SIZE="$(stat -f %z "$OUT/$ZIP_NAME")"
 SIGNED=$([ "$IDENTITY" != "-" ] && echo true || echo false)

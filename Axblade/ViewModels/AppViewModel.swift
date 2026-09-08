@@ -1,17 +1,17 @@
 import Foundation
 import AppKit
 
-/// 顶层工作区:Home = 聊天,Tools = 量化工具。
+/// 顶层工作区:chat = 智能体对话,modules = 五个盘面模块。
 enum Workspace: String, CaseIterable, Sendable {
-    case home, tools
+    case chat, modules
 }
 
 /// 串起会话列表、当前会话、流式发送与设置。视图只跟它打交道。
 @MainActor
 final class AppViewModel: ObservableObject {
-    @Published var workspace: Workspace = .home
-    /// Tools 模式下当前打开的工具;nil = 工具卡列表。侧栏与内容区共用。
-    @Published var selectedTool: QuantTool?
+    @Published var workspace: Workspace = .chat
+    /// 模块模式下当前打开的模块;nil = 模块卡列表。侧栏与内容区共用。
+    @Published var selectedModule: AgentModule?
     /// 始终按「最近活跃」排在前面,不靠排序算法,靠每次更新时挪到队首。
     @Published private(set) var conversations: [Conversation]
     @Published var selectedID: UUID?
@@ -40,8 +40,19 @@ final class AppViewModel: ObservableObject {
     @Published var isEmailFormExpanded = false
 
     var service: any ChatService
-    var marketServices: [MarketSourceKind: any MarketDataService]
+    /// A 股数据源(fuyao)。测试注入内存实现。
+    var data: any AShareDataProvider {
+        didSet { contextBuilder.data = data }
+    }
     var accountService: AccountService
+    /// 智能体上下文构造器:发消息前按意图拉数据。
+    var contextBuilder: AgentContextBuilder
+    let calendar: TradingCalendar
+    let limitUpPulse: LimitUpPulseModel
+    let dragonTigerTopology: DragonTigerTopologyModel
+    let heatRadar: HeatRadarModel
+    let marketTrend: MarketTrendModel
+    let dragonTigerWatch: DragonTigerWatchModel
     /// 令牌写入口(默认落钥匙串并回读校验)。测试注入内存实现,
     /// 免得宿主的钥匙串权限决定测试成败。
     var tokenWriter: @Sendable (String?) -> Bool = { TokenStore.set($0) }
@@ -66,13 +77,22 @@ final class AppViewModel: ObservableObject {
     init(
         store: ConversationStore,
         service: any ChatService = OpenAIChatService(),
-        marketServices: [MarketSourceKind: any MarketDataService] = MarketServiceRegistry.services(),
-        accountService: AccountService = AccountService()
+        data: any AShareDataProvider = FuyaoDataService(),
+        accountService: AccountService = AccountService(),
+        researchStore: MarketResearchStore = MarketResearchStore(directory: MarketResearchStore.defaultDirectory())
     ) {
         self.store = store
         self.service = service
-        self.marketServices = marketServices
+        self.data = data
         self.accountService = accountService
+        self.contextBuilder = AgentContextBuilder(data: data)
+        let calendar = TradingCalendar(data: data)
+        self.calendar = calendar
+        self.limitUpPulse = LimitUpPulseModel(data: data, calendar: calendar)
+        self.dragonTigerTopology = DragonTigerTopologyModel(data: data, calendar: calendar)
+        self.heatRadar = HeatRadarModel(data: data, calendar: calendar)
+        self.marketTrend = MarketTrendModel(data: data, calendar: calendar, store: researchStore)
+        self.dragonTigerWatch = DragonTigerWatchModel(data: data, calendar: calendar)
         self.isSignedIn = accountService.tokenProvider() != nil
         let loadedSettings = store.loadSettings()
         self.settings = loadedSettings
@@ -88,6 +108,46 @@ final class AppViewModel: ObservableObject {
         if isSignedIn {
             accountTask = Task { [weak self] in await self?.refreshMe() }
         }
+
+        for module in modules { module.describe = { [weak self] in self?.text.describe($0) ?? $0.localizedDescription } }
+        marketTrend.sectorTag = loadedSettings.sectorTag
+        dragonTigerWatch.days = loadedSettings.watchDays
+        contextBuilder.cachedReports = { [weak self] in await self?.cachedReports() ?? [:] }
+    }
+
+    var modules: [ModuleModel] {
+        [limitUpPulse, dragonTigerTopology, heatRadar, marketTrend, dragonTigerWatch]
+    }
+
+    /// 模块页已经算好的报告,智能体直接复用。
+    func cachedReports() -> [AgentIntent: String] {
+        var reports: [AgentIntent: String] = [:]
+        if let report = limitUpPulse.report, report.date == ShanghaiDate.string(Date()) { reports[.limitUp] = report.promptText }
+        if let graph = dragonTigerTopology.graph { reports[.dragonTiger] = graph.promptText }
+        if let report = heatRadar.report, Date().timeIntervalSince(report.fetchedAt) < 3600 { reports[.heat] = report.promptText }
+        if let report = marketTrend.report, Date().timeIntervalSince(report.generatedAt) < 6 * 3600 { reports[.market] = report.promptText }
+        return reports
+    }
+
+    /// 某个模块当前的报告文本(没打开过 / 没算出来为 nil)。
+    func moduleReport(_ module: AgentModule) -> String? {
+        switch module {
+        case .limitUpPulse: limitUpPulse.report?.promptText
+        case .dragonTigerTopology: dragonTigerTopology.graph?.promptText
+        case .heatRadar: heatRadar.report?.promptText
+        case .marketTrend: marketTrend.report?.promptText
+        case .dragonTigerWatch: dragonTigerWatch.report?.promptText
+        }
+    }
+
+    /// 把模块报告作为附件挂到输入卡上。
+    func attachReport(_ report: String, label: String) {
+        pendingAttachments.append(MarketSnapshot(symbol: label, name: nil, price: 0, closes: [], fetchedAt: Date(), reportText: report))
+    }
+
+    func openModule(_ module: AgentModule) {
+        workspace = .modules
+        selectedModule = module
     }
 
     convenience init() {
@@ -405,40 +465,19 @@ final class AppViewModel: ObservableObject {
 
     // MARK: - 行情附加
 
-    var enabledSources: [MarketSourceKind] {
-        MarketSourceKind.allCases.filter { !settings.disabledSources.contains($0) }
-    }
-
-    func setSource(_ kind: MarketSourceKind, enabled: Bool) {
-        if enabled {
-            settings.disabledSources.remove(kind)
-        } else {
-            settings.disabledSources.insert(kind)
+    /// 按代码拉一份 A 股快照(含中文名与近 30 日收盘),给输入卡附加。
+    func fetchSnapshot(symbol: String) async throws -> MarketSnapshot {
+        let code = AShareSymbol.normalize(symbol)
+        guard code.contains(".") else { throw FuyaoError.api(code: 3001, message: String(format: text.marketInvalidSymbolFormat, symbol)) }
+        async let snapshot = data.snapshot(thscodes: [code])
+        async let name = data.searchTickers(code)
+        let end = Date()
+        async let bars = data.historical(thscode: code, start: end.addingTimeInterval(-60 * 86400), end: end, adjust: "forward")
+        guard let item = try await snapshot.first else {
+            throw FuyaoError.api(code: 3001, message: String(format: text.marketInvalidSymbolFormat, symbol))
         }
-    }
-
-    func fetchSnapshot(source: MarketSourceKind, symbol: String) async throws -> MarketSnapshot {
-        try requireSignInForProxiedSource(source)
-        guard let service = marketServices[source] else {
-            throw MarketDataError.network(text.sourceNotRegistered)
-        }
-        return try await service.snapshot(rawSymbol: symbol)
-    }
-
-    func fetchDailyCloses(source: MarketSourceKind, symbol: String, days: Int) async throws -> [Double] {
-        try requireSignInForProxiedSource(source)
-        guard let service = marketServices[source] else {
-            throw MarketDataError.network(text.sourceNotRegistered)
-        }
-        return try await service.dailyCloses(rawSymbol: symbol, days: days)
-    }
-
-    /// 只有 Binance 走官方后端代理(封锁 IP 需要出海),未登录必然 401;
-    /// 与其绕一圈拿后端的报错,不如当场说清楚,一个字节都不发。
-    /// 其余数据源是公共接口,未登录照常可用。
-    private func requireSignInForProxiedSource(_ source: MarketSourceKind) throws {
-        guard source == .binance, !isSignedIn else { return }
-        throw MarketDataError.network(text.signInRequired)
+        let closes = ((try? await bars) ?? []).suffix(30).map(\.close)
+        return MarketSnapshot(from: item, name: (try? await name)?.first?.name, closes: closes, fetchedAt: end)
     }
 
     func attach(_ snapshot: MarketSnapshot) {
@@ -449,10 +488,20 @@ final class AppViewModel: ObservableObject {
         pendingAttachments.removeAll { $0.id == id }
     }
 
+    func setSectorTag(_ tag: String) {
+        settings.sectorTag = tag
+        marketTrend.sectorTag = tag
+    }
+
+    func setWatchDays(_ days: Int) {
+        settings.watchDays = days
+        dragonTigerWatch.days = days
+    }
+
     /// 工具页「让 AI 解读」:回到 Home、开新会话、把量化报告作为用户消息直接发出。
     /// 不动用户没发出去的草稿。
     func analyze(report: String) {
-        workspace = .home
+        workspace = .chat
         let savedDraft = draft
         draft = ""
         newConversation()
@@ -484,24 +533,35 @@ final class AppViewModel: ObservableObject {
         // 用户文字在前、数据块在后;标题只认用户文字,纯附加时用首个代码。
         let language = settings.language
         let blocks = attachments.map { $0.promptText(in: language) }.joined(separator: "\n\n")
-        let content = text.isEmpty ? blocks : (blocks.isEmpty ? text : text + "\n\n" + blocks)
-
-        append(ChatMessage(role: .user, content: content), to: conversationID)
+        let userMessage = ChatMessage(
+            role: .user, content: text,
+            context: blocks.isEmpty ? nil : blocks,
+            contextLabels: attachments.map { snapshot in snapshot.name.map { "\(snapshot.symbol) \($0)" } ?? snapshot.symbol }
+        )
+        append(userMessage, to: conversationID)
         retitleIfNeeded(
             conversationID,
-            from: text.isEmpty ? (attachments.first?.symbol ?? self.text.marketFallbackTitle) : text
+            from: text.isEmpty ? (attachments.first.map { $0.name ?? $0.symbol } ?? self.text.marketFallbackTitle) : text
         )
 
-        let history = outboundHistory(of: conversationID)
         let placeholder = ChatMessage(role: .assistant, content: "")
         append(placeholder, to: conversationID)
         isStreaming = true
 
         let service = service
         let model = settings.modelAlias
+        let builder = contextBuilder
+        let autoContext = settings.agentAutoContext && !text.isEmpty
         streamingTask = Task { [weak self] in
             var failure: Error?
             do {
+                // 智能体:按意图拉实时数据,挂在用户消息上再发。
+                if autoContext {
+                    let context = await builder.build(for: text, language: language)
+                    try Task.checkCancellation()
+                    self?.attachContext(context, to: userMessage.id, in: conversationID)
+                }
+                guard let history = self?.outboundHistory(of: conversationID, language: language) else { return }
                 for try await delta in service.streamReply(messages: history, model: model) {
                     try Task.checkCancellation()
                     self?.appendDelta(delta, to: placeholder.id, in: conversationID)
@@ -521,10 +581,26 @@ final class AppViewModel: ObservableObject {
 
     // MARK: - 内部
 
-    /// 发给模型的历史:不含报错气泡,也不含还没填内容的占位消息。
-    private func outboundHistory(of conversationID: UUID) -> [ChatMessage] {
+    /// 发给模型的历史:系统人设在前;不含报错气泡,也不含还没填内容的占位消息;
+    /// 用户消息带上自动附带的数据块。
+    private func outboundHistory(of conversationID: UUID, language: AppLanguage) -> [ChatMessage] {
         guard let conversation = conversations.first(where: { $0.id == conversationID }) else { return [] }
-        return conversation.messages.filter { !$0.isError && !$0.content.isEmpty }
+        let history = conversation.messages
+            .filter { !$0.isError && !$0.outboundContent.isEmpty }
+            .map { ChatMessage(id: $0.id, role: $0.role, content: $0.outboundContent, createdAt: $0.createdAt) }
+        return [ChatMessage(role: .system, content: AgentContextBuilder.systemPrompt(language: language))] + history
+    }
+
+    /// 把智能体拉到的数据块挂到用户消息上(与手动附加的合并)。
+    private func attachContext(_ context: AgentContext, to messageID: UUID, in conversationID: UUID) {
+        guard !context.isEmpty,
+              let index = conversations.firstIndex(where: { $0.id == conversationID }),
+              let messageIndex = conversations[index].messages.firstIndex(where: { $0.id == messageID })
+        else { return }
+        var message = conversations[index].messages[messageIndex]
+        message.context = [message.context, context.text].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: "\n\n")
+        message.contextLabels += context.labels
+        conversations[index].messages[messageIndex] = message
     }
 
     private func append(_ message: ChatMessage, to conversationID: UUID) {

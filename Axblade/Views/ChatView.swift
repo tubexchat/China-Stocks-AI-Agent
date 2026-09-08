@@ -10,7 +10,10 @@ struct ChatView: View {
             if let conversation = viewModel.current, !conversation.messages.isEmpty {
                 transcript(conversation)
             } else {
-                EmptyStateView()
+                EmptyStateView { suggestion in
+                    viewModel.draft = suggestion
+                    viewModel.send()
+                }
             }
 
             ComposerView(viewModel: viewModel)
@@ -26,7 +29,7 @@ struct ChatView: View {
                 endPoint: .bottom
             )
         )
-        .navigationTitle(viewModel.current?.title ?? "Axblade")
+        .navigationTitle(viewModel.current?.title ?? viewModel.text.appName)
     }
 
     private func transcript(_ conversation: Conversation) -> some View {

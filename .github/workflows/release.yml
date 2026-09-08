@@ -1,4 +1,4 @@
-name: Release · ChillSkill.dmg
+name: Release · AShareAgent.dmg
 
 # 每次推 main:测试 → Release 构建 → 打 DMG(有证书就正式签名+公证,没有就 ad-hoc)
 # → 用 GitHub OIDC 令牌上传到 api.chillskill.xyz(网站「Download for Mac」读 /v1/releases/latest)
@@ -95,7 +95,7 @@ jobs:
       - name: Upload artifact (record)
         uses: actions/upload-artifact@v4
         with:
-          name: ChillSkill-dmg-${{ github.run_number }}
+          name: AShareAgent-dmg-${{ github.run_number }}
           path: |
             build/dmg/*.dmg
             build/dmg/*.zip
@@ -153,20 +153,20 @@ jobs:
           fi
           if [ "$O_VERIFY" = "success" ] && [ "$PUBLISHED" != "true" ]; then
             STATUS=warning
-            BODY="**应用**:ChillSkill for Mac\n**版本**:v${ver}(构建 #${GITHUB_RUN_NUMBER})· ${size} MB · ${signed}\n**提交**:${short} ${subject}\n**推送者**:${ACTOR}\n**未发布原因**:本次构建未签名/未公证,服务端拒绝用它覆盖线上已公证版本(信任等级不降级);仓库配置签名与公证 secrets(见 README)后 CI 会自动发布公证版。安装包已上传为 Actions artifact"
+            BODY="**应用**:A股智能体 (AShareAgent) for Mac\n**版本**:v${ver}(构建 #${GITHUB_RUN_NUMBER})· ${size} MB · ${signed}\n**提交**:${short} ${subject}\n**推送者**:${ACTOR}\n**未发布原因**:本次构建未签名/未公证,服务端拒绝用它覆盖线上已公证版本(信任等级不降级);仓库配置签名与公证 secrets(见 README)后 CI 会自动发布公证版。安装包已上传为 Actions artifact"
             BUTTONS="Actions artifact|${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID};当前线上版本|https://api.chillskill.xyz/v1/releases/latest"
           elif [ "$O_VERIFY" = "success" ]; then
             STATUS=success
-            BODY="**应用**:ChillSkill for Mac\n**版本**:v${ver}(构建 #${GITHUB_RUN_NUMBER})· ${size} MB · ${signed}\n**文件**:${file}(sha256 ${sha}…)\n**提交**:${short} ${subject}\n**推送者**:${ACTOR}"
+            BODY="**应用**:A股智能体 (AShareAgent) for Mac\n**版本**:v${ver}(构建 #${GITHUB_RUN_NUMBER})· ${size} MB · ${signed}\n**文件**:${file}(sha256 ${sha}…)\n**提交**:${short} ${subject}\n**推送者**:${ACTOR}"
             BUTTONS="下载 DMG|https://api.chillskill.xyz/downloads/mac/${file};发布信息|https://api.chillskill.xyz/v1/releases/latest;Actions|${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
           else
             STATUS=failure
             stage="测试"; [ "$O_TEST" = "success" ] && stage="打包"; [ "$O_PKG" = "success" ] && stage="上传(GitHub OIDC → API)"; [ "$O_UPLOAD" = "success" ] && stage="发布校验"
             hint=""; [ "$O_PKG" = "success" ] && [ "$O_UPLOAD" != "success" ] && hint="\n**提示**:DMG 已打好(见 Actions artifact);上传失败看 ci-logs 里的 build-upload 日志(常见:API 未放行本仓库/分支、网络)"
-            BODY="**应用**:ChillSkill for Mac\n**失败阶段**:${stage}(test=${O_TEST}, pkg=${O_PKG}, upload=${O_UPLOAD}, verify=${O_VERIFY})\n**版本**:v${ver}(构建 #${GITHUB_RUN_NUMBER})\n**提交**:${short} ${subject}\n**推送者**:${ACTOR}\n**日志**:仓库 ci-logs 分支(git fetch origin ci-logs)${hint}"
+            BODY="**应用**:A股智能体 (AShareAgent) for Mac\n**失败阶段**:${stage}(test=${O_TEST}, pkg=${O_PKG}, upload=${O_UPLOAD}, verify=${O_VERIFY})\n**版本**:v${ver}(构建 #${GITHUB_RUN_NUMBER})\n**提交**:${short} ${subject}\n**推送者**:${ACTOR}\n**日志**:仓库 ci-logs 分支(git fetch origin ci-logs)${hint}"
             BUTTONS="Actions|${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
           fi
-          export STATUS TITLE="ChillSkill Mac 打包发布" BODY BUTTONS
+          export STATUS TITLE="AShareAgent Mac 打包发布" BODY BUTTONS
           ./.github/scripts/notify-lark.sh
 
       - name: Publish logs to ci-logs branch (on failure)

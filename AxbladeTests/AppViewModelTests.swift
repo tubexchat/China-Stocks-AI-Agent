@@ -94,23 +94,6 @@ private final class MarketCallCounter: @unchecked Sendable {
     }
 }
 
-private struct CountingMarketService: MarketDataService {
-    let counter: MarketCallCounter
-
-    func snapshot(rawSymbol: String) async throws -> MarketSnapshot {
-        counter.record()
-        return MarketSnapshot(
-            source: .binance, symbol: "BTCUSDT", name: nil, price: 1, changePercent: nil,
-            high: nil, low: nil, volume: nil, currency: nil, closes: [], fetchedAt: Date()
-        )
-    }
-
-    func dailyCloses(rawSymbol: String, days: Int) async throws -> [Double] {
-        counter.record()
-        return [1, 2, 3]
-    }
-}
-
 @MainActor
 final class AppViewModelTests: XCTestCase {
     private var directory: URL!
@@ -136,17 +119,20 @@ final class AppViewModelTests: XCTestCase {
     private func makeViewModel(
         service: FakeChatService = FakeChatService(chunks: ["a", "b"]),
         token: String? = "test-token",
-        tokenWriter: (@Sendable (String?) -> Bool)? = nil
+        tokenWriter: (@Sendable (String?) -> Bool)? = nil,
+        data: StubDataProvider = StubDataProvider()
     ) -> AppViewModel {
         let box = TokenBox(token)
         let viewModel = AppViewModel(
             store: ConversationStore(directory: directory),
             service: service,
+            data: data,
             accountService: AccountService(
                 session: MockHTTPProtocol.session(),
                 baseURL: Backend.baseURL,
                 tokenProvider: { box.token }
-            )
+            ),
+            researchStore: MarketResearchStore(directory: directory.appendingPathComponent("research"))
         )
         viewModel.tokenWriter = tokenWriter ?? { box.set($0) }
         viewModel.accountTask?.cancel()
@@ -276,7 +262,7 @@ final class AppViewModelTests: XCTestCase {
         viewModel.send()
         await viewModel.streamingTask?.value
 
-        XCTAssertEqual(service.recorder.received.map(\.content), ["第一次", "第二次"])
+        XCTAssertEqual(service.recorder.received.filter { $0.role != .system }.map(\.content), ["第一次", "第二次"])
     }
 
     // MARK: - 停止
@@ -378,9 +364,8 @@ final class AppViewModelTests: XCTestCase {
     // MARK: - 行情附加
 
     private static let sampleSnapshot = MarketSnapshot(
-        source: .binance, symbol: "BTCUSDT", name: nil,
-        price: 64038, changePercent: -1.47,
-        high: nil, low: nil, volume: nil, currency: nil,
+        symbol: "600519.SH", name: "贵州茅台",
+        price: 1309.3, changePercent: -0.51,
         closes: [], fetchedAt: Date(timeIntervalSince1970: 1_786_500_000)
     )
 
@@ -393,8 +378,10 @@ final class AppViewModelTests: XCTestCase {
         viewModel.send()
         await viewModel.streamingTask?.value
 
-        let sent = service.recorder.received.first?.content ?? ""
-        XCTAssertTrue(sent.hasPrefix("帮我分析走势\n\n【行情数据 · Binance · BTCUSDT"), sent)
+        let sent = service.recorder.received.first { $0.role == .user }?.content ?? ""
+        XCTAssertTrue(sent.hasPrefix("帮我分析走势\n\n【A股行情 · 600519.SH(贵州茅台)"), sent)
+        XCTAssertEqual(viewModel.current?.messages.first?.content, "帮我分析走势", "界面上只显示用户文字")
+        XCTAssertEqual(viewModel.current?.messages.first?.contextLabels, ["600519.SH 贵州茅台"])
         XCTAssertEqual(viewModel.current?.title, "帮我分析走势")   // 标题不吃数据块
         XCTAssertTrue(viewModel.pendingAttachments.isEmpty)        // 发送后清空
     }
@@ -408,8 +395,9 @@ final class AppViewModelTests: XCTestCase {
         await viewModel.streamingTask?.value
 
         XCTAssertEqual(viewModel.current?.messages.first?.role, .user)
-        XCTAssertTrue(viewModel.current?.messages.first?.content.hasPrefix("【行情数据") == true)
-        XCTAssertEqual(viewModel.current?.title, "BTCUSDT")
+        XCTAssertEqual(viewModel.current?.messages.first?.content, "")
+        XCTAssertTrue(viewModel.current?.messages.first?.outboundContent.hasPrefix("【A股行情") == true)
+        XCTAssertEqual(viewModel.current?.title, "贵州茅台")
     }
 
     func testRemoveAttachment() {
@@ -421,55 +409,113 @@ final class AppViewModelTests: XCTestCase {
         XCTAssertTrue(viewModel.pendingAttachments.isEmpty)
     }
 
-    func testEnabledSourcesRespectDisabledSetAndPersist() {
+    func testFetchSnapshotResolvesNameAndCloses() async throws {
         let viewModel = makeViewModel()
-        XCTAssertEqual(viewModel.enabledSources, MarketSourceKind.allCases)
 
-        viewModel.setSource(.okx, enabled: false)
-        viewModel.setSource(.krStock, enabled: false)
+        let snapshot = try await viewModel.fetchSnapshot(symbol: "600519")
 
-        XCTAssertEqual(viewModel.enabledSources, [.binance, .mexc, .usStock, .hkStock, .aShare])
-        XCTAssertEqual(
-            ConversationStore(directory: directory).loadSettings().disabledSources,
-            [.okx, .krStock]
-        )
-
-        viewModel.setSource(.okx, enabled: true)
-        XCTAssertEqual(viewModel.enabledSources, [.binance, .okx, .mexc, .usStock, .hkStock, .aShare])
+        XCTAssertEqual(snapshot.symbol, "600519.SH")
+        XCTAssertEqual(snapshot.name, "贵州茅台")
+        XCTAssertEqual(snapshot.price, 1309.3)
+        XCTAssertEqual(snapshot.closes.count, 30)
     }
 
-    func testFetchSnapshotRoutesThroughInjectedService() async throws {
-        struct FixedService: MarketDataService {
-            func snapshot(rawSymbol: String) async throws -> MarketSnapshot {
-                MarketSnapshot(
-                    source: .okx, symbol: "ETH-USDT", name: nil, price: 3000, changePercent: 1,
-                    high: nil, low: nil, volume: nil, currency: nil, closes: [], fetchedAt: Date()
-                )
-            }
+    func testFetchSnapshotRejectsNonAShareSymbols() async {
+        let viewModel = makeViewModel()
+        do {
+            _ = try await viewModel.fetchSnapshot(symbol: "AAPL")
+            XCTFail("美股代码不该通过")
+        } catch let error as FuyaoError {
+            XCTAssertEqual(error, .api(code: 3001, message: String(format: viewModel.text.marketInvalidSymbolFormat, "AAPL")))
+        } catch {
+            XCTFail("错误类型不对:\(error)")
         }
-        let viewModel = makeViewModel()
-        viewModel.marketServices = [.okx: FixedService()]
-
-        let snapshot = try await viewModel.fetchSnapshot(source: .okx, symbol: "eth")
-
-        XCTAssertEqual(snapshot.symbol, "ETH-USDT")
     }
 
-    // MARK: - Tools 工作区
+    // MARK: - 智能体上下文
 
-    func testAnalyzeJumpsHomeAndSendsReportInFreshConversation() async {
+    func testAgentAttachesLiveDataByIntentAndSystemPrompt() async {
+        let service = FakeChatService(chunks: ["ok"])
+        let stub = StubDataProvider()
+        let viewModel = makeViewModel(service: service, data: stub)
+        viewModel.draft = "今天涨停情绪怎么样"
+
+        viewModel.send()
+        await viewModel.streamingTask?.value
+
+        let received = service.recorder.received
+        XCTAssertEqual(received.first?.role, .system)
+        XCTAssertTrue(received.first?.content.contains("A股智能体") == true)
+        let user = received.first { $0.role == .user }
+        XCTAssertTrue(user?.content.hasPrefix("今天涨停情绪怎么样\n\n【涨停情绪市场脉冲") == true, user?.content ?? "")
+        XCTAssertEqual(viewModel.current?.messages.first?.contextLabels, ["涨停情绪"])
+        XCTAssertEqual(viewModel.current?.messages.first?.content, "今天涨停情绪怎么样")
+        XCTAssertEqual(stub.count("limitUpPool"), 1)
+    }
+
+    func testAgentAutoContextCanBeDisabled() async {
+        let service = FakeChatService(chunks: ["ok"])
+        let stub = StubDataProvider()
+        let viewModel = makeViewModel(service: service, data: stub)
+        viewModel.settings.agentAutoContext = false
+        viewModel.draft = "今天涨停情绪怎么样"
+
+        viewModel.send()
+        await viewModel.streamingTask?.value
+
+        XCTAssertTrue(stub.calls.isEmpty)
+        XCTAssertEqual(service.recorder.received.first { $0.role == .user }?.content, "今天涨停情绪怎么样")
+        XCTAssertEqual(ConversationStore(directory: directory).loadSettings().agentAutoContext, false)
+    }
+
+    func testAgentReusesOpenModuleReport() async {
+        let service = FakeChatService(chunks: ["ok"])
+        let stub = StubDataProvider()
+        let viewModel = makeViewModel(service: service, data: stub)
+        viewModel.limitUpPulse.load(date: ShanghaiDate.string(Date()))
+        await viewModel.limitUpPulse.task?.value
+        XCTAssertNotNil(viewModel.limitUpPulse.report)
+        let before = stub.count("limitUpPool")
+        viewModel.draft = "涨停情绪"
+
+        viewModel.send()
+        await viewModel.streamingTask?.value
+
+        XCTAssertEqual(stub.count("limitUpPool"), before, "模块页已经有报告,不重复拉")
+        XCTAssertEqual(viewModel.current?.messages.first?.contextLabels, ["涨停情绪"])
+    }
+
+    func testAttachModuleReportGoesOutAsBlock() async {
+        let service = FakeChatService(chunks: ["ok"])
+        let viewModel = makeViewModel(service: service)
+        viewModel.settings.agentAutoContext = false
+        viewModel.attachReport("【热度报告】共振 3 只", label: "市场热度与飙升雷达")
+        XCTAssertEqual(viewModel.pendingAttachments.first?.chipText, "市场热度与飙升雷达")
+
+        viewModel.send()
+        await viewModel.streamingTask?.value
+
+        XCTAssertEqual(service.recorder.received.first { $0.role == .user }?.content, "【热度报告】共振 3 只")
+        XCTAssertEqual(viewModel.current?.title, "市场热度与飙升雷达")
+    }
+
+    // MARK: - 模块工作区
+
+    func testAnalyzeJumpsToChatAndSendsReportInFreshConversation() async {
         let service = FakeChatService(chunks: ["解读完毕"])
         let viewModel = makeViewModel(service: service)
         viewModel.draft = "旧草稿"
-        viewModel.workspace = .tools
+        viewModel.openModule(.limitUpPulse)
+        XCTAssertEqual(viewModel.workspace, .modules)
+        XCTAssertEqual(viewModel.selectedModule, .limitUpPulse)
 
-        viewModel.analyze(report: "【历史回测 · Binance · BTCUSDT】策略收益 +12%")
+        viewModel.analyze(report: "【历史回测 · A股 · 600519.SH】策略收益 +12%")
         await viewModel.streamingTask?.value
 
-        XCTAssertEqual(viewModel.workspace, .home)
+        XCTAssertEqual(viewModel.workspace, .chat)
         let first = viewModel.current?.messages.first
         XCTAssertEqual(first?.role, .user)
-        XCTAssertTrue(first?.content.contains("请解读以下量化分析结果") == true)
+        XCTAssertTrue(first?.content.contains("请解读以下盘面数据") == true)
         XCTAssertTrue(first?.content.contains("策略收益 +12%") == true)
         XCTAssertEqual(viewModel.current?.messages.last?.content, "解读完毕")
         XCTAssertEqual(viewModel.draft, "旧草稿", "不应吃掉用户没发的草稿")
@@ -656,36 +702,6 @@ final class AppViewModelTests: XCTestCase {
         let viewModel = makeViewModel(token: nil)
 
         XCTAssertEqual(viewModel.availableModels.map(\.alias), Backend.models.map(\.alias))
-    }
-
-    // MARK: - 未登录时的行情代理
-
-    func testBinanceFetchWithoutSignInIsBlockedBeforeTheRequest() async {
-        let counter = MarketCallCounter()
-        let viewModel = makeViewModel(token: nil)
-        viewModel.marketServices = [.binance: CountingMarketService(counter: counter)]
-
-        do {
-            _ = try await viewModel.fetchSnapshot(source: .binance, symbol: "btc")
-            XCTFail("未登录不该拿到 Binance 行情")
-        } catch let error as MarketDataError {
-            XCTAssertEqual(error, .network(viewModel.text.signInRequired))
-        } catch {
-            XCTFail("错误类型不对:\(error)")
-        }
-
-        XCTAssertEqual(counter.calls, 0, "未登录不该发出 Binance 请求")
-    }
-
-    /// 只有 Binance 走后端代理;公共源未登录照常可用。
-    func testPublicSourcesStillWorkWhenSignedOut() async throws {
-        let counter = MarketCallCounter()
-        let viewModel = makeViewModel(token: nil)
-        viewModel.marketServices = [.okx: CountingMarketService(counter: counter)]
-
-        _ = try await viewModel.fetchSnapshot(source: .okx, symbol: "eth")
-
-        XCTAssertEqual(counter.calls, 1)
     }
 
     func testSignInFailureShowsTheBackendMessage() async {
@@ -889,7 +905,8 @@ final class AppViewModelTests: XCTestCase {
         let viewModel = makeViewModel()
 
         XCTAssertEqual(viewModel.currentModel.alias, "deepseek")
-        XCTAssertEqual(viewModel.enabledSources, MarketSourceKind.allCases)
+        XCTAssertTrue(viewModel.settings.agentAutoContext)
+        XCTAssertEqual(viewModel.settings.sectorTag, "industry")
     }
 }
 
@@ -1034,11 +1051,13 @@ final class SocialSignInViewModelTests: XCTestCase {
         let viewModel = AppViewModel(
             store: ConversationStore(directory: directory),
             service: FakeChatService(),
+            data: StubDataProvider(),
             accountService: AccountService(
                 session: MockHTTPProtocol.session(),
                 baseURL: Backend.baseURL,
                 tokenProvider: { box.token }
-            )
+            ),
+            researchStore: MarketResearchStore(directory: directory.appendingPathComponent("research"))
         )
         viewModel.accountTask?.cancel()
         viewModel.tokenWriter = { box.set($0) }

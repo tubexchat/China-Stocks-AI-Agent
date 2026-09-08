@@ -1,9 +1,8 @@
 import SwiftUI
 
-/// “+” 菜单选中数据源后弹出:输入代码 → 查询 → 预览 → 附加。
+/// “+” → 附加个股行情:输入代码 → 查询 → 预览 → 附加。
 struct AttachmentSheet: View {
     @ObservedObject var viewModel: AppViewModel
-    let source: MarketSourceKind
     let onDone: () -> Void
 
     @State private var symbol = ""
@@ -14,12 +13,12 @@ struct AttachmentSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text(String(format: viewModel.text.attachSheetTitleFormat, viewModel.text.sourceName(source)))
+            Text(viewModel.text.attachSheetTitle)
                 .font(.headline)
                 .foregroundStyle(Theme.text)
 
             HStack(spacing: 8) {
-                TextField(placeholder, text: $symbol)
+                TextField(viewModel.text.aShareSymbolHint, text: $symbol)
                     .textFieldStyle(.roundedBorder)
                     .focused($focused)
                     .onSubmit(query)
@@ -36,7 +35,7 @@ struct AttachmentSheet: View {
             if let errorText {
                 Text(errorText)
                     .font(.callout)
-                    .foregroundStyle(Theme.down)
+                    .foregroundStyle(Theme.danger)
                     .fixedSize(horizontal: false, vertical: true)
             }
             if let preview {
@@ -60,10 +59,6 @@ struct AttachmentSheet: View {
         .onAppear { focused = true }
     }
 
-    private var placeholder: String {
-        viewModel.text.symbolHint(source)
-    }
-
     private func query() {
         let text = symbol.trimmingCharacters(in: .whitespaces)
         guard !text.isEmpty, !isLoading else { return }
@@ -73,7 +68,7 @@ struct AttachmentSheet: View {
 
         Task { @MainActor in
             do {
-                preview = try await viewModel.fetchSnapshot(source: source, symbol: text)
+                preview = try await viewModel.fetchSnapshot(symbol: text)
             } catch {
                 errorText = viewModel.text.describe(error)
             }
@@ -96,7 +91,7 @@ struct SnapshotPreviewCard: View {
                     .foregroundStyle(Theme.text)
                     .lineLimit(1)
                 Spacer()
-                Text(l10n.sourceName(snapshot.source))
+                Text("A股")
                     .font(.caption)
                     .foregroundStyle(Theme.muted)
             }
@@ -110,7 +105,7 @@ struct SnapshotPreviewCard: View {
                     Text(MarketSnapshot.formatPercent(change))
                         .font(.callout.weight(.medium))
                         .monospacedDigit()
-                        .foregroundStyle(change < 0 ? Theme.down : Theme.up)
+                        .foregroundStyle(Theme.changeColor(change))
                 }
             }
 
@@ -131,9 +126,10 @@ struct SnapshotPreviewCard: View {
     }
 }
 
-/// 迷你收盘价折线。
+/// 迷你折线。
 struct SparkLine: View {
     let values: [Double]
+    var color: Color = Theme.accent
 
     var body: some View {
         GeometryReader { geo in
@@ -146,7 +142,7 @@ struct SparkLine: View {
                         index == 0 ? path.move(to: CGPoint(x: x, y: y)) : path.addLine(to: CGPoint(x: x, y: y))
                     }
                 }
-                .stroke(Theme.accent, style: StrokeStyle(lineWidth: 1.5, lineCap: .round, lineJoin: .round))
+                .stroke(color, style: StrokeStyle(lineWidth: 1.5, lineCap: .round, lineJoin: .round))
             }
         }
     }

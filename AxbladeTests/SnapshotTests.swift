@@ -42,7 +42,7 @@ final class SnapshotTests: XCTestCase {
     }
 
     func testRenderSettings() throws {
-        try render(name: "04-settings", size: CGSize(width: 760, height: 500)) {
+        try render(name: "04-settings", size: CGSize(width: 760, height: 520)) {
             SettingsView(viewModel: Self.makeViewModel(seeded: true))
         }
     }
@@ -64,16 +64,16 @@ final class SnapshotTests: XCTestCase {
         }
     }
 
-    func testRenderSourcesSettings() throws {
-        try render(name: "08-sources", size: CGSize(width: 760, height: 500)) {
-            SourcesSettingsView(viewModel: Self.makeViewModel(seeded: false))
+    func testRenderDataSettings() throws {
+        try render(name: "08-data-settings", size: CGSize(width: 760, height: 520)) {
+            DataSettingsView(viewModel: Self.makeViewModel(seeded: false))
         }
     }
 
     func testRenderComposerWithAttachmentChips() throws {
         let viewModel = Self.makeViewModel(seeded: false)
-        viewModel.attach(Self.sampleSnapshot(symbol: "BTCUSDT", change: 2.31))
-        viewModel.attach(Self.sampleSnapshot(symbol: "600519.SS", change: -0.82))
+        viewModel.attach(Self.sampleSnapshot(symbol: "600519.SH", change: 2.31))
+        viewModel.attach(Self.sampleSnapshot(symbol: "300750.SZ", change: -0.82))
         try render(name: "09-composer-chips", size: CGSize(width: 1120, height: 740)) {
             workspace(viewModel: viewModel)
         }
@@ -81,17 +81,89 @@ final class SnapshotTests: XCTestCase {
 
     func testRenderAttachmentPreviewCard() throws {
         try render(name: "10-preview-card", size: CGSize(width: 440, height: 200)) {
-            SnapshotPreviewCard(snapshot: Self.sampleSnapshot(symbol: "AAPL", change: 1.6, closes: [301, 305, 299, 303, 308]))
+            SnapshotPreviewCard(snapshot: Self.sampleSnapshot(symbol: "600519.SH", change: 1.6, closes: [301, 305, 299, 303, 308]))
                 .padding(20)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(Theme.background)
         }
     }
 
-    func testRenderToolsGrid() throws {
+    func testRenderModulesGrid() throws {
         let viewModel = Self.makeViewModel(seeded: false)
-        viewModel.workspace = .tools
-        try render(name: "11-tools-grid", size: CGSize(width: 1120, height: 740)) {
+        viewModel.workspace = .modules
+        try render(name: "11-modules-grid", size: CGSize(width: 1120, height: 740)) {
+            workspace(viewModel: viewModel)
+        }
+    }
+
+    // MARK: - 五个盘面模块(喂真实夹具)
+
+    func testRenderLimitUpPulse() async throws {
+        let viewModel = Self.makeViewModel(seeded: false)
+        viewModel.openModule(.limitUpPulse)
+        viewModel.limitUpPulse.load(date: "2026-09-08")
+        await viewModel.limitUpPulse.task?.value
+        XCTAssertNotNil(viewModel.limitUpPulse.report)
+        try render(name: "20-limit-up-pulse", size: CGSize(width: 1240, height: 1500)) {
+            workspace(viewModel: viewModel)
+        }
+    }
+
+    func testRenderDragonTigerTopology() async throws {
+        let viewModel = Self.makeViewModel(seeded: false)
+        viewModel.openModule(.dragonTigerTopology)
+        viewModel.dragonTigerTopology.load()
+        await viewModel.dragonTigerTopology.task?.value
+        XCTAssertNotNil(viewModel.dragonTigerTopology.graph)
+        viewModel.dragonTigerTopology.selectedNodeID = "player:低位挖掘"
+        try render(name: "21-dragon-tiger-topology", size: CGSize(width: 1240, height: 1500), appearance: .darkAqua) {
+            workspace(viewModel: viewModel)
+        }
+    }
+
+    func testRenderHeatRadar() async throws {
+        let viewModel = Self.makeViewModel(seeded: false)
+        viewModel.openModule(.heatRadar)
+        viewModel.heatRadar.load()
+        await viewModel.heatRadar.task?.value
+        XCTAssertNotNil(viewModel.heatRadar.report)
+        try render(name: "22-heat-radar", size: CGSize(width: 1240, height: 1500)) {
+            workspace(viewModel: viewModel)
+        }
+    }
+
+    func testRenderMarketTrend() async throws {
+        let viewModel = Self.makeViewModel(seeded: false)
+        viewModel.openModule(.marketTrend)
+        viewModel.marketTrend.refresh()
+        await viewModel.marketTrend.task?.value
+        XCTAssertNotNil(viewModel.marketTrend.report)
+        viewModel.marketTrend.stockSymbol = "600519"
+        viewModel.marketTrend.researchStock()
+        for _ in 0..<50 where viewModel.marketTrend.isLoadingStock {
+            try await Task.sleep(for: .milliseconds(100))
+        }
+        XCTAssertNotNil(viewModel.marketTrend.stockMetrics)
+        try render(name: "23-market-trend", size: CGSize(width: 1240, height: 2000), appearance: .darkAqua) {
+            workspace(viewModel: viewModel)
+        }
+    }
+
+    func testRenderDragonTigerWatch() async throws {
+        let viewModel = Self.makeViewModel(seeded: false)
+        viewModel.openModule(.dragonTigerWatch)
+        viewModel.dragonTigerWatch.load()
+        await viewModel.dragonTigerWatch.task?.value
+        XCTAssertNotNil(viewModel.dragonTigerWatch.report)
+        viewModel.dragonTigerWatch.selectedPlayer = "低位挖掘"
+        try render(name: "24-dragon-tiger-watch", size: CGSize(width: 1240, height: 1500)) {
+            workspace(viewModel: viewModel)
+        }
+    }
+
+    func testRenderConversationWithAgentContext() throws {
+        let viewModel = Self.makeViewModel(seeded: true, withContext: true)
+        try render(name: "25-agent-context-chip", size: CGSize(width: 1120, height: 740)) {
             workspace(viewModel: viewModel)
         }
     }
@@ -118,8 +190,8 @@ final class SnapshotTests: XCTestCase {
             return 100 + x * 0.15 + 12 * sin(x / 11)
         }
         var result = try Backtester.run(closes: closes)
-        result.symbol = "BTCUSDT"
-        result.sourceName = "Binance"
+        result.symbol = "600519.SH"
+        result.sourceName = "A股"
 
         try render(name: "12-backtest-result", size: CGSize(width: 760, height: 520)) {
             VStack(alignment: .leading, spacing: 14) {
@@ -154,9 +226,9 @@ final class SnapshotTests: XCTestCase {
         symbol: String, change: Double, closes: [Double] = [64100, 64900, 63800, 64038]
     ) -> MarketSnapshot {
         MarketSnapshot(
-            source: .binance, symbol: symbol, name: nil,
-            price: 64038, changePercent: change,
-            high: 65379, low: 63806, volume: 13676, currency: nil,
+            symbol: symbol, name: symbol.hasPrefix("600519") ? "贵州茅台" : nil,
+            price: 1309.3, changePercent: change,
+            high: 1323, low: 1309.05, volume: 1_753_404, turnover: 2_302_823_800,
             closes: closes, fetchedAt: Date(timeIntervalSince1970: 1_786_500_000)
         )
     }
@@ -169,8 +241,8 @@ final class SnapshotTests: XCTestCase {
             SidebarView(viewModel: viewModel)
                 .frame(width: 250)
             Divider().overlay(Theme.border)
-            if viewModel.workspace == .tools {
-                ToolsView(viewModel: viewModel)
+            if viewModel.workspace == .modules {
+                ModulesView(viewModel: viewModel)
             } else {
                 ChatView(viewModel: viewModel)
             }
@@ -191,7 +263,7 @@ final class SnapshotTests: XCTestCase {
     """
 
     private static func makeViewModel(
-        seeded: Bool, withError: Bool = false, signedIn: Bool = false
+        seeded: Bool, withError: Bool = false, signedIn: Bool = false, withContext: Bool = false
     ) -> AppViewModel {
         let directory = FileManager.default.temporaryDirectory
             .appendingPathComponent("AxbladeSnapshot-\(UUID().uuidString)", isDirectory: true)
@@ -219,32 +291,36 @@ final class SnapshotTests: XCTestCase {
         if seeded {
             // 两条会话的 updatedAt 必须拉开,否则同毫秒的排序由 UUID 决定,截图会飘。
             let now = Date()
-            var conversation = Conversation(title: "BTC 短线均线与关键位", updatedAt: now)
+            var conversation = Conversation(title: "贵州茅台短线均线与关键位", updatedAt: now)
             conversation.messages = [
-                ChatMessage(role: .user, content: "看一下 BTC 的短期均线和上下关键价位"),
+                ChatMessage(
+                    role: .user, content: "看一下贵州茅台的短期均线和上下关键价位",
+                    context: withContext ? "【A股行情 · 600519.SH(贵州茅台)】现价 1309.3" : nil,
+                    contextLabels: withContext ? ["600519.SH 贵州茅台", "涨停情绪"] : []
+                ),
                 ChatMessage(role: .assistant, content: """
                 ## 3. 均线与关键位置
                 粗略估算几个短期均线:
 
-                - MA5 ≈ 63,567
-                - MA10 ≈ 63,728
-                - MA20 ≈ 63,892
+                - MA5 ≈ 1,312
+                - MA10 ≈ 1,305
+                - MA20 ≈ 1,298
                   - 与 MA10 距离很近,随时可能金叉
-                - MA30 ≈ 64,214
+                - MA30 ≈ 1,290
 
-                当前价格 **64,271** 站在这些均线上方,短线偏强;但均线还没有完全形成多头排列,\
+                当前价格 **1,309.3** 站在这些均线上方,短线偏强;但均线还没有完全形成多头排列,\
                 所以只能算反弹,还不能说是趋势反转。
 
                 ### 上方阻力
                 | 区间 | 说明 |
                 |---|---|
-                | 64,600–64,700 | 日内高点 / 短期压力 |
-                | 65,000–65,400 | 前期密集成交区 |
-                | 66,500 | 30 日收盘高点附近 |
+                | 1,320–1,323 | 日内高点 / 短期压力 |
+                | 1,340–1,350 | 前期密集成交区 |
+                | 1,377 | 30 日收盘高点附近 |
 
                 ### 下方支撑
-                1. 63,800:MA20 附近
-                2. 63,200:前低
+                1. 1,298:MA20 附近
+                2. 1,280:前低
 
                 > 仅供研究参考,不构成投资建议。
 
@@ -263,7 +339,10 @@ final class SnapshotTests: XCTestCase {
             try? store.saveConversations([conversation, older])
         }
 
-        let viewModel = AppViewModel(store: store, accountService: accountService)
+        let viewModel = AppViewModel(
+            store: store, data: StubDataProvider(), accountService: accountService,
+            researchStore: MarketResearchStore(directory: directory.appendingPathComponent("research"))
+        )
         viewModel.accountTask?.cancel()
         return viewModel
     }

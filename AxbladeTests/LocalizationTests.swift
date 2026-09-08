@@ -49,32 +49,36 @@ final class LocalizationTests: XCTestCase {
         XCTAssertTrue(L10nStrings.en.describe(stream).contains("interrupted"))
     }
 
-    func testMarketErrorsAreDescribedInTheActiveLanguage() {
-        let notFound = MarketDataError.invalidSymbol("XXXX")
-
-        XCTAssertTrue(L10nStrings.zh.describe(notFound).contains("XXXX"))
-        XCTAssertTrue(L10nStrings.en.describe(notFound).contains("XXXX"))
-        XCTAssertNotEqual(L10nStrings.zh.describe(notFound), L10nStrings.en.describe(notFound))
+    func testFuyaoErrorsAreDescribedInTheActiveLanguage() {
+        XCTAssertTrue(L10nStrings.zh.describe(FuyaoError.api(code: 2001, message: "x")).contains("2001"))
+        XCTAssertTrue(L10nStrings.en.describe(FuyaoError.api(code: 2001, message: "x")).contains("invalid or expired"))
+        XCTAssertTrue(L10nStrings.zh.describe(FuyaoError.api(code: 4001, message: "x")).contains("频率"))
+        XCTAssertTrue(L10nStrings.en.describe(FuyaoError.api(code: 3002, message: "x")).contains("not ready"))
+        XCTAssertEqual(L10nStrings.zh.describe(FuyaoError.api(code: 1002, message: "bad date")), "数据接口错误 1002:bad date")
+        XCTAssertEqual(L10nStrings.en.describe(FuyaoError.missingKey), L10nStrings.en.fuyaoMissingKey)
+        XCTAssertNotEqual(L10nStrings.zh.describe(FuyaoError.network("x")), L10nStrings.en.describe(FuyaoError.network("x")))
     }
 
-    func testSourceAndToolNamesAreLocalized() {
-        XCTAssertEqual(L10nStrings.zh.sourceName(.usStock), "美股")
-        XCTAssertEqual(L10nStrings.en.sourceName(.usStock), "US Stocks")
-        XCTAssertEqual(L10nStrings.en.sourceName(.binance), "Binance")
+    func testModuleAndToolNamesAreLocalized() {
+        XCTAssertEqual(L10nStrings.zh.moduleName(.limitUpPulse), "涨停情绪市场脉冲")
+        XCTAssertEqual(L10nStrings.en.moduleName(.limitUpPulse), "Limit-Up Sentiment Pulse")
+        XCTAssertEqual(L10nStrings.zh.moduleName(.dragonTigerWatch), "龙虎榜机构与游资观察")
         XCTAssertEqual(L10nStrings.zh.toolName(.backtest), "历史回测")
         XCTAssertEqual(L10nStrings.en.toolName(.backtest), "Backtest")
+        for module in AgentModule.allCases {
+            XCTAssertNotEqual(L10nStrings.zh.moduleSubtitle(module), L10nStrings.en.moduleSubtitle(module))
+        }
     }
 
     func testMarketSnapshotPromptTextFollowsLanguage() {
         let snapshot = MarketSnapshot(
-            source: .binance, symbol: "BTCUSDT", name: nil,
-            price: 64038, changePercent: -1.47,
-            high: nil, low: nil, volume: nil, currency: nil,
+            symbol: "600519.SH", name: "贵州茅台",
+            price: 1309.3, changePercent: -0.51,
             closes: [], fetchedAt: Date(timeIntervalSince1970: 1_786_500_000)
         )
 
-        XCTAssertTrue(snapshot.promptText(in: .zh).contains("【行情数据"))
-        XCTAssertTrue(snapshot.promptText(in: .en).contains("[Market data"))
+        XCTAssertTrue(snapshot.promptText(in: .zh).contains("【A股行情"))
+        XCTAssertTrue(snapshot.promptText(in: .en).contains("[A-share quote"))
         // 无参版本保持中文,老调用与既有测试不受影响
         XCTAssertEqual(snapshot.promptText, snapshot.promptText(in: .zh))
     }

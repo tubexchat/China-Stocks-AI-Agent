@@ -10,19 +10,19 @@ settings:
     MACOSX_DEPLOYMENT_TARGET: "14.0"
     DEVELOPMENT_TEAM: A2SZ953D3V
     CODE_SIGN_STYLE: Automatic
-    MARKETING_VERSION: "0.3.1"
-    CURRENT_PROJECT_VERSION: "4"
+    MARKETING_VERSION: "1.0.0"
+    CURRENT_PROJECT_VERSION: "1"
 targets:
   Axblade:
     type: application
     platform: macOS
-    # 产品名(菜单栏 / Dock / .app 文件名)是 ChillSkill;目标名/仓库沿用内部代号 Axblade
-    productName: ChillSkill
+    # 产品名(菜单栏 / Dock / .app 文件名)是 AShareAgent(显示名「A股智能体」);目标名/模块名沿用内部代号 Axblade
+    productName: AShareAgent
     sources: [Axblade]
     info:
       path: Axblade/App/Info.plist
       properties:
-        CFBundleDisplayName: ChillSkill
+        CFBundleDisplayName: A股智能体
         CFBundleIconName: AppIcon
         NSHumanReadableCopyright: "© 2026 Primit"
         LSMinimumSystemVersion: "14.0"
@@ -33,8 +33,8 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: io.primit.axblade
-        # 产品名 ChillSkill(与上面的 productName 一致);模块名保持 Axblade,代码 / 测试 @testable import 不变
-        PRODUCT_NAME: ChillSkill
+        # 产品名 AShareAgent(与上面的 productName 一致);模块名保持 Axblade,代码 / 测试 @testable import 不变
+        PRODUCT_NAME: AShareAgent
         PRODUCT_MODULE_NAME: Axblade
         ENABLE_HARDENED_RUNTIME: true
         CODE_SIGN_IDENTITY: "Apple Development"

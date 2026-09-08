@@ -93,7 +93,7 @@ struct AccountSettingsView: View {
             if let error = viewModel.authError {
                 Text(error)
                     .font(.callout)
-                    .foregroundStyle(Theme.down)
+                    .foregroundStyle(Theme.danger)
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: 420)
             }
@@ -427,7 +427,7 @@ struct AccountSettingsView: View {
                         }
                         .buttonStyle(.plain)
                         .font(.caption)
-                        .foregroundStyle(Theme.down)
+                        .foregroundStyle(Theme.danger)
                     }
                 }
                 .padding(.vertical, 2)
@@ -466,7 +466,7 @@ struct AccountSettingsView: View {
                     if let passwordNotice {
                         Text(passwordNotice)
                             .font(.caption)
-                            .foregroundStyle(passwordNotice == text.passwordUpdated ? Theme.up : Theme.down)
+                            .foregroundStyle(passwordNotice == text.passwordUpdated ? Theme.up : Theme.danger)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     if passwordNeedsReauth { reauthButton }
@@ -532,7 +532,7 @@ struct AccountSettingsView: View {
                     if let deleteError {
                         Text(deleteError)
                             .font(.caption)
-                            .foregroundStyle(Theme.down)
+                            .foregroundStyle(Theme.danger)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     if deleteNeedsReauth { reauthButton }
@@ -542,12 +542,12 @@ struct AccountSettingsView: View {
             .padding(.top, 8)
         }
         .font(.callout)
-        .foregroundStyle(Theme.down)
+        .foregroundStyle(Theme.danger)
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Theme.surface)
         .clipShape(RoundedRectangle(cornerRadius: 8))
-        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Theme.down.opacity(0.45), lineWidth: 1))
+        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Theme.danger.opacity(0.45), lineWidth: 1))
         .alert(text.deleteAccount, isPresented: $showDeleteConfirmation) {
             Button(text.cancel, role: .cancel) {}
             Button(text.deleteAccountConfirm, role: .destructive) {
@@ -614,7 +614,7 @@ struct QuotaBar: View {
             ZStack(alignment: .leading) {
                 RoundedRectangle(cornerRadius: 3).fill(Theme.elevated)
                 RoundedRectangle(cornerRadius: 3)
-                    .fill(fraction >= 1 ? Theme.down : Theme.accent)
+                    .fill(fraction >= 1 ? Theme.danger : Theme.accent)
                     .frame(width: geo.size.width * min(max(fraction, 0), 1))
             }
         }

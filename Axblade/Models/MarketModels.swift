@@ -1,55 +1,27 @@
 import Foundation
 
-/// 金融数据源。前三个是加密交易所(公共 REST),后四个是股票市场(统一走 Yahoo Finance)。
-enum MarketSourceKind: String, Codable, CaseIterable, Sendable, Identifiable {
+/// 智能体的五个功能模块(声明顺序即侧栏 / 卡片展示顺序)。
+enum AgentModule: String, CaseIterable, Identifiable, Sendable {
+    case limitUpPulse, dragonTigerTopology, heatRadar, marketTrend, dragonTigerWatch
+
     var id: String { rawValue }
 
-    case binance, okx, mexc
-    case usStock, krStock, hkStock, aShare
-
-    var displayName: String {
+    var icon: String {
         switch self {
-        case .binance: "Binance"
-        case .okx: "OKX"
-        case .mexc: "抹茶 MEXC"
-        case .usStock: "美股"
-        case .krStock: "韩股"
-        case .hkStock: "港股"
-        case .aShare: "A股"
-        }
-    }
-
-    var isCrypto: Bool {
-        switch self {
-        case .binance, .okx, .mexc: true
-        default: false
+        case .limitUpPulse: "waveform.path.ecg"
+        case .dragonTigerTopology: "point.3.connected.trianglepath.dotted"
+        case .heatRadar: "dot.radiowaves.left.and.right"
+        case .marketTrend: "chart.xyaxis.line"
+        case .dragonTigerWatch: "eye.trianglebadge.exclamationmark"
         }
     }
 }
 
-/// 量化工具(声明顺序即侧栏/卡片展示顺序)。
+/// 个股研究里的本地量化工具(全部原生计算)。
 enum QuantTool: String, CaseIterable, Identifiable, Sendable {
     case gbdt, risk, factor, backtest
 
     var id: String { rawValue }
-
-    var name: String {
-        switch self {
-        case .gbdt: "梯度提升树模型"
-        case .risk: "风控模型"
-        case .factor: "因子挖掘"
-        case .backtest: "历史回测"
-        }
-    }
-
-    var subtitle: String {
-        switch self {
-        case .gbdt: "原生 GBDT 预测次日涨跌,给出验证集命中率与特征重要性"
-        case .risk: "历史 VaR、最大回撤、年化波动率、夏普比率"
-        case .factor: "9 个价格类因子的 IC 检验与多空分层,按预测力排序"
-        case .backtest: "双均线交叉策略 vs 买入持有,净值曲线与胜率"
-        }
-    }
 
     var icon: String {
         switch self {
@@ -61,9 +33,8 @@ enum QuantTool: String, CaseIterable, Identifiable, Sendable {
     }
 }
 
-/// 一次行情快照:附加进对话的数据单元。
+/// 一次 A 股行情快照:附加进对话的数据单元。
 struct MarketSnapshot: Equatable, Sendable, Identifiable {
-    var source: MarketSourceKind
     var symbol: String
     var name: String?
     var price: Double
@@ -71,51 +42,82 @@ struct MarketSnapshot: Equatable, Sendable, Identifiable {
     var high: Double?
     var low: Double?
     var volume: Double?
-    var currency: String?
+    var turnover: Double?
+    var currency: String? = "CNY"
     /// 最近 ≤30 根日线收盘,旧→新。
     var closes: [Double]
     var fetchedAt: Date
+    /// 非行情附件(模块报告):有值时 promptText 直接用它。
+    var reportText: String?
 
-    var id: String { "\(source.rawValue):\(symbol):\(fetchedAt.timeIntervalSince1970)" }
+    var id: String { "\(symbol):\(fetchedAt.timeIntervalSince1970)" }
 
-    /// 输入卡上的 chip 文案,如 "BTCUSDT +2.31%"。
-    var chipText: String {
-        guard let changePercent else { return symbol }
-        return "\(symbol) \(Self.formatPercent(changePercent))"
+    init(
+        symbol: String, name: String? = nil, price: Double, changePercent: Double? = nil,
+        high: Double? = nil, low: Double? = nil, volume: Double? = nil, turnover: Double? = nil,
+        currency: String? = "CNY", closes: [Double] = [], fetchedAt: Date = Date(), reportText: String? = nil
+    ) {
+        self.symbol = symbol
+        self.name = name
+        self.price = price
+        self.changePercent = changePercent
+        self.high = high
+        self.low = low
+        self.volume = volume
+        self.turnover = turnover
+        self.currency = currency
+        self.closes = closes
+        self.fetchedAt = fetchedAt
+        self.reportText = reportText
     }
 
-    /// 并入用户消息、发给模型的紧凑数据块(默认中文,老调用不受影响)。
+    init(from item: PriceSnapshotItem, name: String?, closes: [Double], fetchedAt: Date = Date()) {
+        self.init(
+            symbol: item.thscode, name: name, price: item.last_price ?? 0,
+            changePercent: item.price_change_ratio_pct, high: item.high_price, low: item.low_price,
+            volume: item.volume, turnover: item.turnover, currency: "CNY", closes: closes, fetchedAt: fetchedAt
+        )
+    }
+
+    /// 输入卡上的 chip 文案,如 "贵州茅台 +2.31%"。
+    var chipText: String {
+        let title = name ?? symbol
+        guard reportText == nil, let changePercent else { return title }
+        return "\(title) \(Self.formatPercent(changePercent))"
+    }
+
+    /// 并入用户消息、发给模型的紧凑数据块(默认中文)。
     var promptText: String {
         promptText(in: .zh)
     }
 
-    /// 按当前界面语言生成数据块;标签随语言,数值格式不变。
     func promptText(in language: AppLanguage) -> String {
-        let text = language.strings
+        if let reportText { return reportText }
         let title = name.map { "\(symbol)(\($0))" } ?? symbol
         let stamp = Self.stampFormatter.string(from: fetchedAt)
-        let sourceName = text.sourceName(source)
 
         var lines: [String]
         var facts: [String]
         switch language {
         case .zh:
-            lines = ["【行情数据 · \(sourceName) · \(title) · \(stamp)】"]
+            lines = ["【A股行情 · \(title) · \(stamp)】"]
             facts = ["现价 \(Self.formatNumber(price))\(currency.map { " \($0)" } ?? "")"]
-            if let changePercent { facts.append("24h 涨跌 \(Self.formatPercent(changePercent))") }
+            if let changePercent { facts.append("涨跌 \(Self.formatPercent(changePercent))") }
             if let high, let low { facts.append("高 \(Self.formatNumber(high)) / 低 \(Self.formatNumber(low))") }
-            if let volume { facts.append("量 \(Self.formatNumber(volume))") }
+            if let turnover { facts.append("成交额 \(MoneyFormat.yuan(turnover))") }
+            else if let volume { facts.append("量 \(Self.formatNumber(volume))") }
             lines.append(facts.joined(separator: ";"))
             if !closes.isEmpty {
                 let series = closes.map(Self.formatNumber).joined(separator: ", ")
                 lines.append("近\(closes.count)日收盘(旧→新): \(series)")
             }
         case .en:
-            lines = ["[Market data · \(sourceName) · \(title) · \(stamp)]"]
+            lines = ["[A-share quote · \(title) · \(stamp)]"]
             facts = ["Price \(Self.formatNumber(price))\(currency.map { " \($0)" } ?? "")"]
-            if let changePercent { facts.append("24h change \(Self.formatPercent(changePercent))") }
+            if let changePercent { facts.append("Change \(Self.formatPercent(changePercent))") }
             if let high, let low { facts.append("High \(Self.formatNumber(high)) / Low \(Self.formatNumber(low))") }
-            if let volume { facts.append("Volume \(Self.formatNumber(volume))") }
+            if let turnover { facts.append("Turnover \(Self.formatNumber(turnover))") }
+            else if let volume { facts.append("Volume \(Self.formatNumber(volume))") }
             lines.append(facts.joined(separator: "; "))
             if !closes.isEmpty {
                 let series = closes.map(Self.formatNumber).joined(separator: ", ")
@@ -125,7 +127,7 @@ struct MarketSnapshot: Equatable, Sendable, Identifiable {
         return lines.joined(separator: "\n")
     }
 
-    /// |v| ≥ 1 保留两位小数并去尾零;更小的值保留 4 位有效数字(加密小币价格)。
+    /// |v| ≥ 1 保留两位小数并去尾零;更小的值保留 4 位有效数字。
     static func formatNumber(_ value: Double) -> String {
         let formatter = NumberFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
@@ -139,10 +141,20 @@ struct MarketSnapshot: Equatable, Sendable, Identifiable {
         return formatter.string(from: value as NSNumber) ?? String(value)
     }
 
+    /// 百分数固定最多两位小数(0.509875 → 0.51%),不走有效数字规则。
     static func formatPercent(_ value: Double) -> String {
-        let body = formatNumber(abs(value))
+        let body = percentFormatter.string(from: abs(value) as NSNumber) ?? String(abs(value))
         return value < 0 ? "-\(body)%" : "+\(body)%"
     }
+
+    private static let percentFormatter: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.numberStyle = .decimal
+        formatter.usesGroupingSeparator = false
+        formatter.maximumFractionDigits = 2
+        return formatter
+    }()
 
     private static let stampFormatter: DateFormatter = {
         let formatter = DateFormatter()

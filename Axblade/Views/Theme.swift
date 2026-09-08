@@ -1,9 +1,8 @@
 import SwiftUI
 import AppKit
 
-/// Axblade 配色:Binance Dark/Light。
-/// 唯一来源是 `ChillSkill-Website/design-tokens.json`,Web 与 Mac 逐值镜像;
-/// `ThemeTokenTests` 会断言下面这张表,漏改一边就当场红。
+/// A股智能体配色:深色 / 浅色两套语义 token。
+/// 涨跌遵循 A 股习惯 —— **红涨绿跌**;`ThemeTokenTests` 会断言下面这张表。
 enum Theme {
     /// 语义 token → (深色, 浅色) 的 sRGB 十六进制。视图不直接写 hex,一律走语义色。
     static let tokens: [String: (dark: UInt32, light: UInt32)] = [
@@ -18,8 +17,8 @@ enum Theme {
         "accent": (dark: 0xFCD535, light: 0xFCD535),
         "accentStrong": (dark: 0xF0B90B, light: 0xF0B90B),
         "onAccent": (dark: 0x181A20, light: 0x181A20),
-        "up": (dark: 0x0ECB81, light: 0x0ECB81),
-        "down": (dark: 0xF6465D, light: 0xF6465D)
+        "up": (dark: 0xF6465D, light: 0xE5303F),
+        "down": (dark: 0x0ECB81, light: 0x0FA968)
     ]
 
     /// 页面 / 主区底
@@ -37,16 +36,26 @@ enum Theme {
     static let muted = token("muted")
     /// 禁用态文字/描边
     static let disabled = token("disabled")
-    /// 品牌主色(币安黄)
+    /// 品牌主色(金黄)
     static let accent = token("accent")
     /// 悬停 / 强调
     static let accentStrong = token("accentStrong")
     /// 黄底上的字
     static let onAccent = token("onAccent")
-    /// 涨 / 成功
+    /// 涨(A 股:红)
     static let up = token("up")
-    /// 跌 / 错误
+    /// 跌(A 股:绿)
     static let down = token("down")
+    /// 成功提示
+    static let success = token("down")
+    /// 错误 / 危险
+    static let danger = token("up")
+
+    /// 按涨跌幅着色:正红、负绿、零用正文色。
+    static func changeColor(_ value: Double?) -> Color {
+        guard let value, value != 0 else { return text }
+        return value > 0 ? up : down
+    }
     /// 黄色底纹:深色 12%、浅色 16% 的 accent
     static let accentSoft = alpha("accent", dark: 0.12, light: 0.16)
 

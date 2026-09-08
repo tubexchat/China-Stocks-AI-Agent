@@ -15,10 +15,10 @@ struct SidebarView: View {
                 .padding(.top, 10)
                 .padding(.bottom, 4)
 
-            if viewModel.workspace == .home {
+            if viewModel.workspace == .chat {
                 homeContent
             } else {
-                toolsContent
+                modulesContent
             }
 
             bottomBar
@@ -41,8 +41,8 @@ struct SidebarView: View {
     /// 侧栏顶部的 Home | Tools 分段(参考稿:灰色容器 + 选中段白色凸起胶囊)。
     private var workspacePicker: some View {
         HStack(spacing: 2) {
-            workspaceSegment(.home, title: "Home", icon: "house")
-            workspaceSegment(.tools, title: "Tools", icon: "wrench.and.screwdriver")
+            workspaceSegment(.chat, title: viewModel.text.workspaceChat, icon: "bubble.left.and.text.bubble.right")
+            workspaceSegment(.modules, title: viewModel.text.workspaceModules, icon: "chart.bar.xaxis")
         }
         .padding(3)
         .background(Theme.surface2)
@@ -113,24 +113,24 @@ struct SidebarView: View {
         .scrollContentBackground(.hidden)
     }
 
-    /// Tools 模式:侧栏列工具清单。
+    /// 模块模式:侧栏列五个盘面模块。
     @ViewBuilder
-    private var toolsContent: some View {
-        List(selection: $viewModel.selectedTool) {
+    private var modulesContent: some View {
+        List(selection: $viewModel.selectedModule) {
             Section {
-                ForEach(QuantTool.allCases) { tool in
-                    Label(viewModel.text.toolName(tool), systemImage: tool.icon)
+                ForEach(AgentModule.allCases) { module in
+                    Label(viewModel.text.moduleName(module), systemImage: module.icon)
                         .font(.callout)
                         .foregroundStyle(Theme.text)
                         .padding(.vertical, 3)
-                        .tag(tool)
+                        .tag(module)
                         .listRowBackground(
                             RoundedRectangle(cornerRadius: 8)
-                                .fill(tool == viewModel.selectedTool ? Theme.elevated : .clear)
+                                .fill(module == viewModel.selectedModule ? Theme.elevated : .clear)
                         )
                 }
             } header: {
-                Text(viewModel.text.quantToolsHeader)
+                Text(viewModel.text.modulesHeader)
                     .font(.caption)
                     .foregroundStyle(Theme.muted)
             }

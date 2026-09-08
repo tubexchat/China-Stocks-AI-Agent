@@ -2,10 +2,7 @@ import XCTest
 import SwiftUI
 @testable import Axblade
 
-/// 设计 token 守护测试。
-/// 唯一来源:`ChillSkill-Website/design-tokens.json`(Binance Dark/Light);
-/// 与 ChillSkill-Website/design-tokens.json 保持一致 —— 改了 JSON 就要同步改这里,
-/// 两边任何一处漂移,这个测试会当场红。
+/// 设计 token 守护测试:深色 / 浅色两套语义色,涨跌遵循 A 股「红涨绿跌」。
 final class ThemeTokenTests: XCTestCase {
     private func assertToken(
         _ name: String, dark: UInt32, light: UInt32,
@@ -16,7 +13,7 @@ final class ThemeTokenTests: XCTestCase {
         XCTAssertEqual(token.light, light, "\(name).light", file: file, line: line)
     }
 
-    func testBinanceTokensMatchTheWebDesignTokens() throws {
+    func testTokensMatchTheDesignTable() throws {
         try assertToken("background", dark: 0x0B0E11, light: 0xFFFFFF)
         try assertToken("surface", dark: 0x181A20, light: 0xFAFAFA)
         try assertToken("surface2", dark: 0x1E2329, light: 0xF5F5F5)
@@ -28,8 +25,8 @@ final class ThemeTokenTests: XCTestCase {
         try assertToken("accent", dark: 0xFCD535, light: 0xFCD535)
         try assertToken("accentStrong", dark: 0xF0B90B, light: 0xF0B90B)
         try assertToken("onAccent", dark: 0x181A20, light: 0x181A20)
-        try assertToken("up", dark: 0x0ECB81, light: 0x0ECB81)
-        try assertToken("down", dark: 0xF6465D, light: 0xF6465D)
+        try assertToken("up", dark: 0xF6465D, light: 0xE5303F)
+        try assertToken("down", dark: 0x0ECB81, light: 0x0FA968)
     }
 
     /// 侧栏与卡片同一张纸,不再单独调色。

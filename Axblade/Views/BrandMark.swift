@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Axblade 标志:青色六边形里一道斜切的刀锋。
+/// A股智能体标志:圆角方块里一根红色阳线 + 一根绿色阴线(红涨绿跌)。
 struct BrandMark: View {
     var size: CGFloat = 28
     var filled = false
@@ -8,48 +8,27 @@ struct BrandMark: View {
     var body: some View {
         Canvas { context, canvasSize in
             let rect = CGRect(origin: .zero, size: canvasSize)
-            let hexagon = Self.hexagon(in: rect)
-            let blade = Self.blade(in: rect)
-
+            let radius = canvasSize.width * 0.22
+            let frame = Path(roundedRect: rect.insetBy(dx: canvasSize.width * 0.06, dy: canvasSize.height * 0.06), cornerRadius: radius)
             if filled {
-                context.fill(hexagon, with: .color(Theme.accent.opacity(0.16)))
+                context.fill(frame, with: .color(Theme.accent.opacity(0.16)))
             }
-            context.stroke(
-                hexagon,
-                with: .color(Theme.accent),
-                style: StrokeStyle(lineWidth: max(1, canvasSize.width * 0.06), lineJoin: .round)
-            )
-            context.fill(blade, with: .color(Theme.accent))
+            context.stroke(frame, with: .color(Theme.accent), lineWidth: max(1, canvasSize.width * 0.06))
+
+            let w = canvasSize.width, h = canvasSize.height
+            // 阳线(红)
+            context.fill(Self.candle(x: w * 0.36, top: h * 0.30, bottom: h * 0.66, wickTop: h * 0.20, wickBottom: h * 0.76, width: w * 0.14), with: .color(Theme.up))
+            // 阴线(绿)
+            context.fill(Self.candle(x: w * 0.64, top: h * 0.42, bottom: h * 0.62, wickTop: h * 0.34, wickBottom: h * 0.72, width: w * 0.14), with: .color(Theme.down))
         }
         .frame(width: size, height: size)
-        .accessibilityLabel("ChillSkill")
+        .accessibilityLabel("A股智能体")
     }
 
-    private static func hexagon(in rect: CGRect) -> Path {
-        let center = CGPoint(x: rect.midX, y: rect.midY)
-        let radius = min(rect.width, rect.height) / 2 * 0.88
+    private static func candle(x: CGFloat, top: CGFloat, bottom: CGFloat, wickTop: CGFloat, wickBottom: CGFloat, width: CGFloat) -> Path {
         var path = Path()
-        for corner in 0..<6 {
-            let angle = CGFloat(corner) / 6 * 2 * .pi - .pi / 2
-            let point = CGPoint(
-                x: center.x + radius * cos(angle),
-                y: center.y + radius * sin(angle)
-            )
-            corner == 0 ? path.move(to: point) : path.addLine(to: point)
-        }
-        path.closeSubpath()
-        return path
-    }
-
-    private static func blade(in rect: CGRect) -> Path {
-        let width = rect.width
-        let height = rect.height
-        var path = Path()
-        path.move(to: CGPoint(x: width * 0.34, y: height * 0.70))
-        path.addLine(to: CGPoint(x: width * 0.60, y: height * 0.26))
-        path.addLine(to: CGPoint(x: width * 0.70, y: height * 0.34))
-        path.addLine(to: CGPoint(x: width * 0.44, y: height * 0.74))
-        path.closeSubpath()
+        path.addRect(CGRect(x: x - width / 2, y: top, width: width, height: bottom - top))
+        path.addRect(CGRect(x: x - width * 0.12, y: wickTop, width: width * 0.24, height: wickBottom - wickTop))
         return path
     }
 }

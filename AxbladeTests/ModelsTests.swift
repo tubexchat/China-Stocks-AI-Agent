@@ -76,7 +76,7 @@ final class ModelsTests: XCTestCase {
         let settings = AppSettings()
 
         XCTAssertEqual(settings.modelAlias, Backend.defaultModelAlias)
-        XCTAssertTrue(settings.disabledSources.isEmpty)
+        XCTAssertTrue(settings.agentAutoContext)
         XCTAssertEqual(settings.language, .zh)
     }
 

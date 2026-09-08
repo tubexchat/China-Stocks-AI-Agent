@@ -1,4 +1,4 @@
-# ChillSkill(Mac)上架手册(App Store / Developer ID)
+# A股智能体 AShareAgent(Mac)上架手册(App Store / Developer ID)
 
 > 版本 0.3.0(build 3) · Team `A2SZ953D3V` · Bundle ID `io.primit.axblade`
 > 本文只记录**这台机器上验证过**的事实:哪些已经自动化、哪些必须账号本人操作。
@@ -16,7 +16,7 @@
 | 加密豁免 | `ITSAppUsesNonExemptEncryption: false` | ✅(只用系统 HTTPS) |
 | 账号注销入口(5.1.1(v)) | 设置 › 账户 › 删除账号 → `DELETE /v1/me` | ✅ app 内可发起;有密码的账号需重输密码 + 二次确认,纯社交账号只需二次确认 |
 | archive | `./scripts/release.sh archive` | ✅ 本机跑通,产物 `build/Axblade.xcarchive` |
-| Developer ID 导出 | `./scripts/release.sh export-devid` | ✅ 本机跑通,产物 `build/devid/ChillSkill.app` |
+| Developer ID 导出 | `./scripts/release.sh export-devid` | ✅ 本机跑通,产物 `build/devid/AShareAgent.app` |
 | App Store 导出/上传 | `./scripts/release.sh export-appstore` | ⛔ 缺 ASC 的 App 记录(见第二节) |
 | 公证 | `./scripts/release.sh notarize <app-or-dmg>` | ⛔ 缺 `AC_NOTARY` 钥匙串凭据(见第二节) |
 
@@ -44,10 +44,10 @@ Debug 配置故意保持 ad-hoc 签名(`CODE_SIGN_IDENTITY: "-"`):xctest bundle 
 xcodebuild build -project Axblade.xcodeproj -scheme Axblade \
   -configuration Release -destination 'platform=macOS,arch=arm64'
 ./scripts/release.sh archive          # → build/Axblade.xcarchive
-./scripts/release.sh export-devid     # → build/devid/ChillSkill.app(官网分发用)
+./scripts/release.sh export-devid     # → build/devid/AShareAgent.app(官网分发用)
 ./scripts/release.sh export-appstore  # → 直接上传 App Store Connect
-./scripts/release.sh notarize build/devid/ChillSkill.app
-codesign -dv --entitlements - build/devid/ChillSkill.app   # 复核签名与权限
+./scripts/release.sh notarize build/devid/AShareAgent.app
+codesign -dv --entitlements - build/devid/AShareAgent.app   # 复核签名与权限
 ```
 
 本机验证过的签名结果:
@@ -58,7 +58,7 @@ CodeDirectory ... flags=0x10000(runtime)
 Authority=Apple Development: Wei Zhang (3D8X62UZ6G)
 TeamIdentifier=A2SZ953D3V
 
-# codesign -d --entitlements :- build/Axblade.xcarchive/Products/Applications/ChillSkill.app
+# codesign -d --entitlements :- build/Axblade.xcarchive/Products/Applications/AShareAgent.app
 com.apple.application-identifier   = A2SZ953D3V.io.primit.axblade
 com.apple.developer.applesignin    = [Default]
 com.apple.developer.team-identifier= A2SZ953D3V
@@ -69,7 +69,7 @@ com.apple.security.network.client  = true
 Contents/embedded.provisionprofile → "Mac Team Provisioning Profile: io.primit.axblade"
   Entitlements[com.apple.developer.applesignin] = [Default]
 
-# build/devid/ChillSkill.app(导出后已换成分发签名 + 安全时间戳)
+# build/devid/AShareAgent.app(导出后已换成分发签名 + 安全时间戳)
 CodeDirectory ... flags=0x10000(runtime)
 Authority=Developer ID Application: Wei Zhang (A2SZ953D3V)
 Timestamp=Aug 18, 2026 at 11:55:11
@@ -101,7 +101,7 @@ AppsService: fetched 0 items, total 0 items
 本人在 <https://appstoreconnect.apple.com> 新建一次即可:
 
 - 平台:macOS
-- 名称:`ChillSkill`
+- 名称:`A股智能体`
 - 主要语言:简体中文(或英文)
 - Bundle ID:`io.primit.axblade`
 - SKU:`axblade-mac`
@@ -118,7 +118,7 @@ xcrun notarytool store-credentials AC_NOTARY \
 ```
 
 App 专用密码在 <https://account.apple.com> › 登录与安全 › App 专用密码 生成。
-存好之后 `./scripts/release.sh notarize build/devid/ChillSkill.app` 会提交并 staple。
+存好之后 `./scripts/release.sh notarize build/devid/AShareAgent.app` 会提交并 staple。
 
 ### 3. 商店素材(必须人工准备)
 
@@ -169,7 +169,7 @@ Profiles → +,类型选 **Developer ID**(macOS App Development 下方),App ID �
 2. 需要就改 `project.yml` 的 `MARKETING_VERSION` / `CURRENT_PROJECT_VERSION`(每次上传 build 号必须递增)
 3. `./scripts/release.sh archive`
 4. App Store:`./scripts/release.sh export-appstore`(`destination=upload`,直接进 ASC)
-   官网分发:`./scripts/release.sh export-devid` → `./scripts/release.sh notarize build/devid/ChillSkill.app`
+   官网分发:`./scripts/release.sh export-devid` → `./scripts/release.sh notarize build/devid/AShareAgent.app`
 5. ASC 里给新 build 填「新增内容」,提交审核
 
 ### 4. 旧版内置令牌(legacy)的轮换 —— 排期项,不阻塞本次提交

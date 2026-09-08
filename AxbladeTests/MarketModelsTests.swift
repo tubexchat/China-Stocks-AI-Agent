@@ -2,11 +2,9 @@ import XCTest
 @testable import Axblade
 
 final class MarketModelsTests: XCTestCase {
-    func testSevenSourcesSplitIntoCryptoAndEquity() {
-        XCTAssertEqual(MarketSourceKind.allCases, [.binance, .okx, .mexc, .usStock, .krStock, .hkStock, .aShare])
-        XCTAssertEqual(MarketSourceKind.allCases.filter(\.isCrypto), [.binance, .okx, .mexc])
-        XCTAssertEqual(MarketSourceKind.aShare.displayName, "A股")
-        XCTAssertEqual(MarketSourceKind.mexc.displayName, "抹茶 MEXC")
+    func testFiveModulesInDisplayOrder() {
+        XCTAssertEqual(AgentModule.allCases, [.limitUpPulse, .dragonTigerTopology, .heatRadar, .marketTrend, .dragonTigerWatch])
+        XCTAssertEqual(QuantTool.allCases, [.gbdt, .risk, .factor, .backtest])
     }
 
     func testNumberFormattingTrimsNoise() {
@@ -16,51 +14,51 @@ final class MarketModelsTests: XCTestCase {
         XCTAssertEqual(MarketSnapshot.formatNumber(0.001234), "0.001234")
     }
 
-    func testChipTextShowsSymbolAndSignedChange() {
-        var snapshot = Self.sampleCrypto
-        XCTAssertEqual(snapshot.chipText, "BTCUSDT -1.47%")
+    func testChipTextShowsNameAndSignedChange() {
+        var snapshot = Self.sampleMoutai
+        XCTAssertEqual(snapshot.chipText, "贵州茅台 -0.51%")
 
         snapshot.changePercent = 2.309
-        XCTAssertEqual(snapshot.chipText, "BTCUSDT +2.31%")
+        XCTAssertEqual(snapshot.chipText, "贵州茅台 +2.31%")
 
         snapshot.changePercent = nil
-        XCTAssertEqual(snapshot.chipText, "BTCUSDT")
+        XCTAssertEqual(snapshot.chipText, "贵州茅台")
+
+        snapshot.name = nil
+        XCTAssertEqual(snapshot.chipText, "600519.SH")
     }
 
-    func testPromptTextForCrypto() {
-        let text = Self.sampleCrypto.promptText
-        XCTAssertEqual(text, """
-        【行情数据 · Binance · BTCUSDT · 2026-08-11 12:00】
-        现价 64038;24h 涨跌 -1.47%;高 65379.13 / 低 63806.27;量 13675.87
-        近3日收盘(旧→新): 64962.6, 63970.01, 64038
-        """)
-    }
-
-    func testPromptTextForEquityIncludesNameAndCurrency() {
-        let snapshot = MarketSnapshot(
-            source: .usStock, symbol: "AAPL", name: "Apple Inc.",
-            price: 308.26, changePercent: 1.595,
-            high: 308.26, low: 304.63, volume: 43_391_681, currency: "USD",
-            closes: [303.42, 308.26], fetchedAt: Self.noon
-        )
-        XCTAssertEqual(snapshot.promptText, """
-        【行情数据 · 美股 · AAPL(Apple Inc.) · 2026-08-11 12:00】
-        现价 308.26 USD;24h 涨跌 +1.6%;高 308.26 / 低 304.63;量 43391681
-        近2日收盘(旧→新): 303.42, 308.26
+    func testPromptTextForAShare() {
+        XCTAssertEqual(Self.sampleMoutai.promptText, """
+        【A股行情 · 600519.SH(贵州茅台) · 2026-08-11 12:00】
+        现价 1309.3 CNY;涨跌 -0.51%;高 1323 / 低 1309.05;成交额 23.03亿
+        近3日收盘(旧→新): 1316.01, 1318, 1309.3
         """)
     }
 
     func testPromptTextOmitsMissingFields() {
-        let snapshot = MarketSnapshot(
-            source: .okx, symbol: "BTC-USDT", name: nil,
-            price: 64039.4, changePercent: nil,
-            high: nil, low: nil, volume: nil, currency: nil,
-            closes: [], fetchedAt: Self.noon
-        )
+        let snapshot = MarketSnapshot(symbol: "000001.SZ", price: 11.78, currency: nil, closes: [], fetchedAt: Self.noon)
         XCTAssertEqual(snapshot.promptText, """
-        【行情数据 · OKX · BTC-USDT · 2026-08-11 12:00】
-        现价 64039.4
+        【A股行情 · 000001.SZ · 2026-08-11 12:00】
+        现价 11.78
         """)
+    }
+
+    func testSnapshotBuiltFromFuyaoItem() {
+        let item = Fixtures.snapshot[0]
+        let snapshot = MarketSnapshot(from: item, name: "贵州茅台", closes: [1, 2], fetchedAt: Self.noon)
+        XCTAssertEqual(snapshot.symbol, "600519.SH")
+        XCTAssertEqual(snapshot.price, 1309.3)
+        XCTAssertEqual(snapshot.changePercent, -0.509875)
+        XCTAssertEqual(snapshot.turnover, 2_302_823_800)
+        XCTAssertEqual(snapshot.currency, "CNY")
+    }
+
+    func testReportAttachmentUsesItsOwnText() {
+        let attachment = MarketSnapshot(symbol: "涨停情绪", price: 0, closes: [], fetchedAt: Self.noon, reportText: "【涨停情绪】情绪分 66")
+        XCTAssertEqual(attachment.chipText, "涨停情绪")
+        XCTAssertEqual(attachment.promptText, "【涨停情绪】情绪分 66")
+        XCTAssertEqual(attachment.promptText(in: .en), "【涨停情绪】情绪分 66")
     }
 
     // 2026-08-11 12:00 本地时区
@@ -71,10 +69,10 @@ final class MarketModelsTests: XCTestCase {
         return Calendar.current.date(from: components)!
     }()
 
-    static let sampleCrypto = MarketSnapshot(
-        source: .binance, symbol: "BTCUSDT", name: nil,
-        price: 64038.0, changePercent: -1.468,
-        high: 65379.13, low: 63806.27, volume: 13675.871, currency: nil,
-        closes: [64962.6, 63970.01, 64038.0], fetchedAt: noon
+    static let sampleMoutai = MarketSnapshot(
+        symbol: "600519.SH", name: "贵州茅台",
+        price: 1309.3, changePercent: -0.509875,
+        high: 1323, low: 1309.05, volume: 1_753_404, turnover: 2_302_823_800,
+        closes: [1316.01, 1318, 1309.3], fetchedAt: noon
     )
 }

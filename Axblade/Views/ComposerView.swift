@@ -6,7 +6,7 @@ struct ComposerView: View {
     @ObservedObject var viewModel: AppViewModel
     @FocusState private var focused: Bool
 
-    @State private var attachmentSource: MarketSourceKind?
+    @State private var showAttachment = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -15,9 +15,9 @@ struct ComposerView: View {
         }
         .padding(.horizontal, 24)
         .padding(.bottom, 20)
-        .sheet(item: $attachmentSource) { source in
-            AttachmentSheet(viewModel: viewModel, source: source) {
-                attachmentSource = nil
+        .sheet(isPresented: $showAttachment) {
+            AttachmentSheet(viewModel: viewModel) {
+                showAttachment = false
             }
         }
     }
@@ -76,28 +76,24 @@ struct ComposerView: View {
         .onAppear { focused = true }
     }
 
-    /// “+”:数据源菜单(分组只列启用的源)。
+    /// “+”:附加个股行情 / 模块报告;顺带一个智能体自动附带开关。
     private var sourceMenu: some View {
         Menu {
-            let crypto = viewModel.enabledSources.filter(\.isCrypto)
-            let equity = viewModel.enabledSources.filter { !$0.isCrypto }
-            if crypto.isEmpty && equity.isEmpty {
-                Text(viewModel.text.noEnabledSources)
-            }
-            if !crypto.isEmpty {
-                Section(viewModel.text.cryptoSection) {
-                    ForEach(crypto, id: \.self) { source in
-                        Button(viewModel.text.sourceName(source)) { attachmentSource = source }
+            Button(viewModel.text.attachQuote) { showAttachment = true }
+            Menu(viewModel.text.attachModuleReport) {
+                ForEach(AgentModule.allCases) { module in
+                    let report = viewModel.moduleReport(module)
+                    Button(viewModel.text.moduleName(module)) {
+                        if let report { viewModel.attachReport(report, label: viewModel.text.moduleName(module)) }
                     }
+                    .disabled(report == nil)
                 }
             }
-            if !equity.isEmpty {
-                Section(viewModel.text.equitySection) {
-                    ForEach(equity, id: \.self) { source in
-                        Button(viewModel.text.sourceName(source)) { attachmentSource = source }
-                    }
-                }
-            }
+            Divider()
+            Toggle(viewModel.text.agentAutoContextLabel, isOn: Binding(
+                get: { viewModel.settings.agentAutoContext },
+                set: { viewModel.settings.agentAutoContext = $0 }
+            ))
         } label: {
             Image(systemName: "plus")
                 .font(.system(size: 15, weight: .medium))

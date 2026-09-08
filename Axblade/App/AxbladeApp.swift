@@ -7,15 +7,21 @@ struct AxbladeApp: App {
     var body: some Scene {
         WindowGroup {
             RootView(viewModel: viewModel)
-                .frame(minWidth: 900, minHeight: 600)
+                .frame(minWidth: 960, minHeight: 640)
                 .environment(\.l10n, viewModel.text)
         }
-        .defaultSize(width: 1120, height: 740)
+        .defaultSize(width: 1240, height: 800)
         .windowResizability(.contentMinSize)
         .commands {
             CommandGroup(replacing: .newItem) {
                 Button(viewModel.text.newChatMenu) { viewModel.newConversation() }
                     .keyboardShortcut("n", modifiers: .command)
+            }
+            CommandMenu(viewModel.text.workspaceModules) {
+                ForEach(Array(AgentModule.allCases.enumerated()), id: \.element) { index, module in
+                    Button(viewModel.text.moduleName(module)) { viewModel.openModule(module) }
+                        .keyboardShortcut(KeyEquivalent(Character(String(index + 1))), modifiers: .command)
+                }
             }
         }
 
@@ -26,7 +32,7 @@ struct AxbladeApp: App {
     }
 }
 
-private struct RootView: View {
+struct RootView: View {
     @ObservedObject var viewModel: AppViewModel
     @State private var columnVisibility = NavigationSplitViewVisibility.all
 
@@ -36,11 +42,11 @@ private struct RootView: View {
                 .navigationSplitViewColumnWidth(min: 200, ideal: 250, max: 340)
         } detail: {
             switch viewModel.workspace {
-            case .home:
+            case .chat:
                 ChatView(viewModel: viewModel)
-            case .tools:
-                ToolsView(viewModel: viewModel)
-                    .navigationTitle(viewModel.text.quantToolsHeader)
+            case .modules:
+                ModulesView(viewModel: viewModel)
+                    .navigationTitle(viewModel.selectedModule.map { viewModel.text.moduleName($0) } ?? viewModel.text.modulesHeader)
             }
         }
         .background(Theme.background)

@@ -273,19 +273,6 @@ final class ChatRequestTokenTests: XCTestCase {
 
         XCTAssertNil(request.value(forHTTPHeaderField: "Authorization"))
     }
-
-    func testBinanceProxyOmitsAuthorizationWhenSignedOut() {
-        let request = BinanceMarketService.proxiedRequest("api/v3/klines?symbol=BTCUSDT", token: nil)
-
-        XCTAssertNil(request.value(forHTTPHeaderField: "Authorization"))
-        XCTAssertTrue(request.url?.absoluteString.hasPrefix("\(Backend.baseURL)/market/binance/") == true)
-    }
-
-    func testBinanceProxyCarriesTheToken() {
-        let request = BinanceMarketService.proxiedRequest("api/v3/klines?symbol=BTCUSDT", token: "axb_y")
-
-        XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer axb_y")
-    }
 }
 
 /// 社交登录(spec 1.4b):令牌交换全部经由**我们自己的后端**,

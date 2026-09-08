@@ -40,7 +40,8 @@ final class ConversationStoreTests: XCTestCase {
         let store = ConversationStore(directory: directory)
         var settings = AppSettings()
         settings.modelAlias = "kimi"
-        settings.disabledSources = [.okx]
+        settings.agentAutoContext = false
+        settings.watchDays = 3
 
         try store.saveSettings(settings)
 
