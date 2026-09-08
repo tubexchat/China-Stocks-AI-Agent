@@ -84,7 +84,7 @@ struct MarketTrendView: View {
                             Text(text.ret60).font(.caption2).foregroundStyle(Theme.muted)
                             ChangeText(value: index.metrics.ret60 * 100).font(.caption)
                             Spacer()
-                            Text(text.alignment(index.metrics)).font(.caption2).foregroundStyle(index.metrics.bullishAlignment ? Theme.up : (index.metrics.bearishAlignment ? Theme.down : Theme.muted))
+                            Text(text.alignment(index.metrics)).font(.caption2).foregroundStyle(Theme.alignmentColor(index.metrics))
                         }
                     }
                     .padding(10)
@@ -110,7 +110,7 @@ struct MarketTrendView: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(text.breadthDistribution).font(.caption).foregroundStyle(Theme.muted)
                         VerticalBars(items: breadth.buckets.map { bucket in
-                            .init(label: bucket.label, value: Double(bucket.count), color: bucket.label.hasPrefix("-") || bucket.label.hasPrefix("≤") ? Theme.down : (bucket.label == "0" ? Theme.muted : Theme.up))
+                            HorizontalBars.Item(label: bucket.label, value: Double(bucket.count), color: bucketColor(bucket.label))
                         }, height: 150)
                     }
                     VStack(alignment: .leading, spacing: 4) {
@@ -141,6 +141,12 @@ struct MarketTrendView: View {
         }
     }
 
+    private func bucketColor(_ label: String) -> Color {
+        if label.hasPrefix("-") || label.hasPrefix("≤") { return Theme.down }
+        if label == "0" { return Theme.muted }
+        return Theme.up
+    }
+
     private func snapshotList(_ title: String, _ items: [PriceSnapshotItem]) -> some View {
         SectionCard(title: title) {
             ForEach(items) { item in
@@ -159,11 +165,11 @@ struct MarketTrendView: View {
             ForEach(sectors) { sector in
                 HStack(spacing: 8) {
                     Text(sector.name).font(.callout).foregroundStyle(Theme.text).frame(width: 110, alignment: .leading).lineLimit(1)
-                    Chip(text: "\(sector.score)", color: (sector.score >= 60 ? Theme.up : (sector.score < 40 ? Theme.down : Theme.muted)).opacity(0.15), foreground: sector.score >= 60 ? Theme.up : (sector.score < 40 ? Theme.down : Theme.text))
+                    Chip(text: "\(sector.score)", color: Theme.scoreColor(sector.score, neutral: Theme.muted).opacity(0.15), foreground: Theme.scoreColor(sector.score))
                     SparkLine(values: sector.closes.suffix(60).map { $0 }, color: Theme.changeColor(sector.metrics.ret20)).frame(width: 70, height: 20)
                     ChangeText(value: sector.metrics.ret20 * 100).font(.caption).frame(width: 60, alignment: .trailing)
                     ChangeText(value: sector.metrics.ret60 * 100).font(.caption).frame(width: 60, alignment: .trailing)
-                    Text(text.alignment(sector.metrics)).font(.caption2).foregroundStyle(sector.metrics.bullishAlignment ? Theme.up : (sector.metrics.bearishAlignment ? Theme.down : Theme.muted))
+                    Text(text.alignment(sector.metrics)).font(.caption2).foregroundStyle(Theme.alignmentColor(sector.metrics))
                     Spacer(minLength: 0)
                 }
             }
@@ -213,10 +219,10 @@ struct MarketTrendView: View {
             if let metrics = model.stockMetrics {
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 130), spacing: 10)], spacing: 10) {
                     KPITile(label: text.price, value: NumberFormat.number(metrics.last))
-                    KPITile(label: text.trendScore, value: "\(metrics.score)", color: metrics.score >= 60 ? Theme.up : (metrics.score < 40 ? Theme.down : Theme.text))
+                    KPITile(label: text.trendScore, value: "\(metrics.score)", color: Theme.scoreColor(metrics.score))
                     KPITile(label: text.ret20, value: RiskReport.percent(metrics.ret20), color: Theme.changeColor(metrics.ret20))
                     KPITile(label: text.ret60, value: RiskReport.percent(metrics.ret60), color: Theme.changeColor(metrics.ret60))
-                    KPITile(label: text.maAlignment, value: text.alignment(metrics), color: metrics.bullishAlignment ? Theme.up : (metrics.bearishAlignment ? Theme.down : Theme.text))
+                    KPITile(label: text.maAlignment, value: text.alignment(metrics), color: Theme.alignmentColor(metrics))
                     KPITile(label: text.annualVol, value: RiskReport.percent(metrics.annualVol))
                     KPITile(label: text.maxDrawdown, value: RiskReport.percent(metrics.maxDrawdown60))
                     if let risk = model.stockRisk {

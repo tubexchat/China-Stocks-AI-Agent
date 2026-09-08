@@ -28,9 +28,7 @@ struct LimitUpPulseView: View {
                     kpiGrid(report)
                     HStack(alignment: .top, spacing: 14) {
                         SectionCard(title: text.boardDistribution) {
-                            VerticalBars(items: report.boardDistribution.keys.sorted().map {
-                                .init(label: String(format: text.boardsFormat, $0), value: Double(report.boardDistribution[$0] ?? 0), color: Theme.up.opacity(0.5 + 0.1 * Double(min($0, 5))))
-                            }, height: 130)
+                            VerticalBars(items: boardItems(report), height: 130)
                         }
                         SectionCard(title: text.timeDistribution) {
                             VerticalBars(items: report.timeBuckets.map { .init(label: $0.label, value: Double($0.count)) }, color: Theme.accent, height: 130)
@@ -92,8 +90,19 @@ struct LimitUpPulseView: View {
         }
     }
 
+    private func boardItems(_ report: LimitUpPulseReport) -> [HorizontalBars.Item] {
+        report.boardDistribution.keys.sorted().map { boards in
+            let opacity = 0.5 + 0.1 * Double(min(boards, 5))
+            return HorizontalBars.Item(
+                label: String(format: text.boardsFormat, boards),
+                value: Double(report.boardDistribution[boards] ?? 0),
+                color: Theme.up.opacity(opacity)
+            )
+        }
+    }
+
     private func scoreColor(_ score: Int) -> Color {
-        score >= 60 ? Theme.up : (score < 40 ? Theme.down : Theme.accent)
+        Theme.scoreColor(score, neutral: Theme.accent)
     }
 
     private func kpiGrid(_ report: LimitUpPulseReport) -> some View {

@@ -56,6 +56,27 @@ enum Theme {
         guard let value, value != 0 else { return text }
         return value > 0 ? up : down
     }
+
+    /// 0–100 分数着色:≥60 红、<40 绿、其余中性。
+    static func scoreColor(_ score: Int, neutral: Color = text) -> Color {
+        if score >= 60 { return up }
+        if score < 40 { return down }
+        return neutral
+    }
+
+    /// 均线结构着色:多头红、空头绿、交织灰。
+    static func alignmentColor(_ metrics: TrendMetrics) -> Color {
+        if metrics.bullishAlignment { return up }
+        if metrics.bearishAlignment { return down }
+        return muted
+    }
+
+    /// 异动标签着色:含「涨」红、含「跌」绿、其余中性。
+    static func tagColor(_ tag: String) -> Color {
+        if tag.contains("涨") { return up }
+        if tag.contains("跌") { return down }
+        return muted
+    }
     /// 黄色底纹:深色 12%、浅色 16% 的 accent
     static let accentSoft = alpha("accent", dark: 0.12, light: 0.16)
 

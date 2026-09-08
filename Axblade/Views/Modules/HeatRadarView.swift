@@ -44,7 +44,9 @@ struct HeatRadarView: View {
                     }
                     HStack(alignment: .top, spacing: 14) {
                         SectionCard(title: text.anomalyTags) {
-                            VerticalBars(items: report.tags.map { .init(label: $0.tag, value: Double($0.count), color: $0.tag.contains("涨") ? Theme.up : ($0.tag.contains("跌") ? Theme.down : Theme.accent)) }, height: 120)
+                            VerticalBars(items: report.tags.map { tag in
+                                HorizontalBars.Item(label: tag.tag, value: Double(tag.count), color: tag.tag.contains("涨") || tag.tag.contains("跌") ? Theme.tagColor(tag.tag) : Theme.accent)
+                            }, height: 120)
                         }
                         SectionCard(title: text.anomalyKeywords) {
                             HorizontalBars(items: report.keywords.prefix(14).map { .init(label: $0.keyword, value: Double($0.count)) })
@@ -118,13 +120,19 @@ struct HeatRadarView: View {
         }
     }
 
+    private func tagChip(_ tag: String) -> Chip {
+        let colored = tag.contains("涨") || tag.contains("跌")
+        let tone = Theme.tagColor(tag)
+        return Chip(text: tag, color: colored ? tone.opacity(0.15) : Theme.accentSoft, foreground: colored ? tone : Theme.text)
+    }
+
     private func anomaliesCard(_ report: HeatRadarReport) -> some View {
         SectionCard(title: "\(text.anomalyReasons) · \(report.anomalies.count)") {
             CollapsibleList(items: report.anomalies, limit: 8) { item in
                 VStack(alignment: .leading, spacing: 3) {
                     HStack(spacing: 6) {
                         Text(item.stock_name).font(.callout.weight(.medium)).foregroundStyle(Theme.text)
-                        Chip(text: item.tag_name, color: item.tag_name.contains("涨") ? Theme.up.opacity(0.15) : (item.tag_name.contains("跌") ? Theme.down.opacity(0.15) : Theme.accentSoft), foreground: item.tag_name.contains("涨") ? Theme.up : (item.tag_name.contains("跌") ? Theme.down : Theme.text))
+                        tagChip(item.tag_name)
                         ForEach(item.keyword_list.prefix(4), id: \.self) { Chip(text: $0, color: Theme.surface2, foreground: Theme.muted) }
                     }
                     Text(item.analysis_content.split(separator: "\n").first.map(String.init) ?? item.analysis_content)

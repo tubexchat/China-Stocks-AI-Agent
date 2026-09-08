@@ -147,70 +147,128 @@ struct RadarCanvas: View {
     var selected: String?
     var onSelect: (String?) -> Void = { _ in }
 
-    private var placed: [(HeatRadarReport.RadarPoint, angle: Double, radius: Double, size: Double)] {
+    /// 已算好极坐标的一个点。拆成具名结构体而不是元组:CI 上的编译器对元组 + 大闭包会类型推断超时。
+    struct PlacedPoint: Identifiable {
+        var point: HeatRadarReport.RadarPoint
+        var angle: Double
+        var radius: Double
+        var size: Double
+        var id: String { point.id }
+    }
+
+    private var placed: [PlacedPoint] {
         let ranked = points.filter { $0.hotRank != nil }.sorted { ($0.hotRank ?? 0) < ($1.hotRank ?? 0) }
-        let maxHeat = log10(max(ranked.map(\.heat).max() ?? 1, 1) + 1)
-        let minHeat = log10(max(ranked.map(\.heat).min() ?? 1, 1) + 1)
+        let heats = ranked.map(\.heat)
+        let maxHeat = log10(max(heats.max() ?? 1, 1) + 1)
+        let minHeat = log10(max(heats.min() ?? 1, 1) + 1)
         let span = max(maxHeat - minHeat, 0.0001)
-        return ranked.enumerated().map { index, point in
+        var result: [PlacedPoint] = []
+        for (index, point) in ranked.enumerated() {
             let rank = Double(point.hotRank ?? index + 1)
             // 两圈螺旋:每 15 名转一圈,半径随排名外推,相邻点既错角又错半径,不重叠。
-            let angle = (rank - 1) / 15 * 2 * .pi - .pi / 2
-            let radius = 0.22 + 0.74 * (rank - 1) / 29
-            let size = (log10(point.heat + 1) - minHeat) / span
-            return (point, angle, radius, size)
+            let angle: Double = (rank - 1) / 15 * 2 * Double.pi - Double.pi / 2
+            let radius: Double = 0.22 + 0.74 * (rank - 1) / 29
+            let size: Double = (log10(point.heat + 1) - minHeat) / span
+            result.append(PlacedPoint(point: point, angle: angle, radius: radius, size: size))
         }
+        return result
     }
 
     var body: some View {
         GeometryReader { geo in
-            let size = min(geo.size.width, geo.size.height)
+            let side: CGFloat = min(geo.size.width, geo.size.height)
             let center = CGPoint(x: geo.size.width / 2, y: geo.size.height / 2)
-            let maxR = size / 2 - 24
+            let maxR: CGFloat = side / 2 - 24
             ZStack {
-                Canvas { context, _ in
-                    for ring in [0.25, 0.5, 0.75, 1.0] {
-                        let r = maxR * ring
-                        context.stroke(Path(ellipseIn: CGRect(x: center.x - r, y: center.y - r, width: 2 * r, height: 2 * r)), with: .color(Theme.border), lineWidth: 1)
+                RadarGrid(center: center, maxR: maxR)
+                ForEach(placed) { entry in
+                    RadarDot(entry: entry, center: center, maxR: maxR, isSelected: entry.id == selected) {
+                        onSelect(entry.id == selected ? nil : entry.id)
                     }
-                    for spoke in 0..<6 {
-                        let angle = Double(spoke) / 6 * 2 * .pi - .pi / 2
-                        var path = Path()
-                        path.move(to: center)
-                        path.addLine(to: CGPoint(x: center.x + maxR * cos(angle), y: center.y + maxR * sin(angle)))
-                        context.stroke(path, with: .color(Theme.border.opacity(0.7)), lineWidth: 1)
-                    }
-                    context.draw(Text("#1").font(.caption2).foregroundStyle(Theme.muted), at: CGPoint(x: center.x, y: center.y - maxR * 0.1))
-                    context.draw(Text("#30").font(.caption2).foregroundStyle(Theme.muted), at: CGPoint(x: center.x, y: center.y - maxR - 12))
-                }
-                ForEach(placed, id: \.0.id) { entry in
-                    let (point, angle, radius, size) = entry
-                    let position = CGPoint(x: center.x + maxR * radius * cos(angle), y: center.y + maxR * radius * sin(angle))
-                    let dotColor: Color = point.trend == "up" ? Theme.up : (point.trend == "down" ? Theme.down : Theme.muted)
-                    let dot = 6 + 12 * size
-                    let isSelected = point.id == selected
-                    Button {
-                        onSelect(isSelected ? nil : point.id)
-                    } label: {
-                        ZStack {
-                            if point.resonance {
-                                Circle().stroke(Theme.accent, lineWidth: 2).frame(width: dot + 8, height: dot + 8)
-                            }
-                            Circle().fill(dotColor).frame(width: dot, height: dot)
-                                .overlay(Circle().stroke(isSelected ? Theme.text : .clear, lineWidth: 2))
-                            Text(point.name)
-                                .font(.system(size: 9))
-                                .foregroundStyle(isSelected ? Theme.text : Theme.muted)
-                                .offset(y: dot / 2 + 8)
-                        }
-                        .contentShape(Circle())
-                    }
-                    .buttonStyle(.plain)
-                    .position(position)
-                    .help("\(point.name) 热度 \(NumberFormat.number(point.heat))\(point.anomalyTag.map { " · \($0)" } ?? "")")
                 }
             }
         }
+    }
+}
+
+/// 雷达底图:同心圆 + 六根辐条 + 排名标注。
+private struct RadarGrid: View {
+    let center: CGPoint
+    let maxR: CGFloat
+
+    var body: some View {
+        Canvas { context, _ in
+            for ring in [0.25, 0.5, 0.75, 1.0] {
+                let r = maxR * CGFloat(ring)
+                let rect = CGRect(x: center.x - r, y: center.y - r, width: 2 * r, height: 2 * r)
+                context.stroke(Path(ellipseIn: rect), with: .color(Theme.border), lineWidth: 1)
+            }
+            for spoke in 0..<6 {
+                let angle = Double(spoke) / 6 * 2 * Double.pi - Double.pi / 2
+                var path = Path()
+                path.move(to: center)
+                path.addLine(to: CGPoint(x: center.x + maxR * CGFloat(cos(angle)), y: center.y + maxR * CGFloat(sin(angle))))
+                context.stroke(path, with: .color(Theme.border.opacity(0.7)), lineWidth: 1)
+            }
+            let inner = Text("#1").font(.caption2).foregroundStyle(Theme.muted)
+            context.draw(inner, at: CGPoint(x: center.x, y: center.y - maxR * 0.1))
+            let outer = Text("#30").font(.caption2).foregroundStyle(Theme.muted)
+            context.draw(outer, at: CGPoint(x: center.x, y: center.y - maxR - 12))
+        }
+    }
+}
+
+/// 雷达上的一个点(可点击)。
+private struct RadarDot: View {
+    let entry: RadarCanvas.PlacedPoint
+    let center: CGPoint
+    let maxR: CGFloat
+    let isSelected: Bool
+    let onTap: () -> Void
+
+    private var point: HeatRadarReport.RadarPoint { entry.point }
+
+    private var position: CGPoint {
+        let r = maxR * CGFloat(entry.radius)
+        return CGPoint(x: center.x + r * CGFloat(cos(entry.angle)), y: center.y + r * CGFloat(sin(entry.angle)))
+    }
+
+    private var dotColor: Color {
+        if point.trend == "up" { return Theme.up }
+        if point.trend == "down" { return Theme.down }
+        return Theme.muted
+    }
+
+    private var dot: CGFloat { 6 + 12 * CGFloat(entry.size) }
+
+    private var helpText: String {
+        var text = "\(point.name) 热度 \(NumberFormat.number(point.heat))"
+        if let tag = point.anomalyTag { text += " · \(tag)" }
+        return text
+    }
+
+    var body: some View {
+        Button(action: onTap) {
+            ZStack {
+                if point.resonance {
+                    Circle()
+                        .stroke(Theme.accent, lineWidth: 2)
+                        .frame(width: dot + 8, height: dot + 8)
+                }
+                Circle()
+                    .fill(dotColor)
+                    .frame(width: dot, height: dot)
+                    .overlay(Circle().stroke(isSelected ? Theme.text : Color.clear, lineWidth: 2))
+                Text(point.name)
+                    .font(.system(size: 9))
+                    .foregroundStyle(isSelected ? Theme.text : Theme.muted)
+                    .offset(y: dot / 2 + 8)
+            }
+            .contentShape(Circle())
+        }
+        .buttonStyle(.plain)
+        .position(position)
+        .help(helpText)
     }
 }
 
@@ -223,9 +281,9 @@ struct TopologyCanvas: View {
     /// 股票列每行高度;外层按它算画布高度。
     static let rowHeight: CGFloat = 24
 
-    private struct Layout {
-        var positions: [String: CGPoint]
-        var sizes: [String: CGFloat]
+    struct Layout {
+        var positions: [String: CGPoint] = [:]
+        var sizes: [String: CGFloat] = [:]
     }
 
     private func layout(in size: CGSize) -> Layout {
@@ -233,66 +291,112 @@ struct TopologyCanvas: View {
         let stocks = Array(graph.nodes(of: .stock).prefix(maxStocks))
         let concepts = graph.nodes(of: .concept)
         let columns: [(CGFloat, [FlowGraph.Node])] = [(0.12, players), (0.5, stocks), (0.88, concepts)]
-        var positions: [String: CGPoint] = [:]
-        var sizes: [String: CGFloat] = [:]
-        let maxGross = max(graph.nodes.map(\.gross).max() ?? 1, 1)
+        var layout = Layout()
+        let maxGross: Double = max(graph.nodes.map(\.gross).max() ?? 1, 1)
         for (xRatio, nodes) in columns {
             let count = max(nodes.count, 1)
             let step = (size.height - 40) / CGFloat(count)
             for (index, node) in nodes.enumerated() {
-                positions[node.id] = CGPoint(x: size.width * xRatio, y: 20 + step * (CGFloat(index) + 0.5))
-                sizes[node.id] = 6 + 14 * CGFloat(sqrt(node.gross / maxGross))
+                layout.positions[node.id] = CGPoint(x: size.width * xRatio, y: 20 + step * (CGFloat(index) + 0.5))
+                layout.sizes[node.id] = 6 + 14 * CGFloat(sqrt(node.gross / maxGross))
             }
         }
-        return Layout(positions: positions, sizes: sizes)
+        return layout
     }
 
     var body: some View {
         GeometryReader { geo in
             let layout = layout(in: geo.size)
             let highlighted: Set<String>? = selected.map { graph.neighbors(of: $0).union([$0]) }
-            let maxEdge = max(graph.edges.map { abs($0.value) }.max() ?? 1, 1)
+            let visible = graph.nodes.filter { layout.positions[$0.id] != nil }
             ZStack {
-                Canvas { context, _ in
-                    for edge in graph.edges {
-                        guard let from = layout.positions[edge.from], let to = layout.positions[edge.to] else { continue }
-                        let active = highlighted.map { $0.contains(edge.from) && $0.contains(edge.to) } ?? true
-                        var path = Path()
-                        path.move(to: from)
-                        let dx = (to.x - from.x) * 0.5
-                        path.addCurve(to: to, control1: CGPoint(x: from.x + dx, y: from.y), control2: CGPoint(x: to.x - dx, y: to.y))
-                        let width = 1 + 7 * CGFloat(sqrt(abs(edge.value) / maxEdge))
-                        let color = (edge.value >= 0 ? Theme.up : Theme.down).opacity(active ? 0.75 : 0.08)
-                        context.stroke(path, with: .color(color), lineWidth: width)
-                    }
-                }
-                ForEach(graph.nodes.filter { layout.positions[$0.id] != nil }) { node in
-                    let position = layout.positions[node.id] ?? .zero
-                    let radius = layout.sizes[node.id] ?? 6
-                    let active = highlighted?.contains(node.id) ?? true
-                    let fill: Color = node.kind == .stock ? Theme.changeColor(node.net) : (node.kind == .player ? Theme.accent : Theme.muted)
-                    Button {
+                TopologyEdges(graph: graph, layout: layout, highlighted: highlighted)
+                ForEach(visible) { node in
+                    TopologyNode(
+                        node: node,
+                        position: layout.positions[node.id] ?? .zero,
+                        radius: layout.sizes[node.id] ?? 6,
+                        active: highlighted?.contains(node.id) ?? true,
+                        isSelected: selected == node.id
+                    ) {
                         onSelect(selected == node.id ? nil : node.id)
-                    } label: {
-                        HStack(spacing: 4) {
-                            if node.kind == .concept { label(node, active: active) }
-                            Circle()
-                                .fill(fill.opacity(active ? 1 : 0.25))
-                                .frame(width: radius * 2, height: radius * 2)
-                                .overlay(Circle().stroke(selected == node.id ? Theme.text : .clear, lineWidth: 2))
-                            if node.kind != .concept { label(node, active: active) }
-                        }
-                        .contentShape(Rectangle())
                     }
-                    .buttonStyle(.plain)
-                    .position(position)
-                    .help("\(node.label) \(MoneyFormat.yuan(node.net))\(node.reason.map { " · \($0)" } ?? "")")
                 }
             }
         }
     }
+}
 
-    private func label(_ node: FlowGraph.Node, active: Bool) -> some View {
+/// 所有资金边。
+private struct TopologyEdges: View {
+    let graph: FlowGraph
+    let layout: TopologyCanvas.Layout
+    let highlighted: Set<String>?
+
+    var body: some View {
+        let maxEdge: Double = max(graph.edges.map { abs($0.value) }.max() ?? 1, 1)
+        Canvas { context, _ in
+            for edge in graph.edges {
+                guard let from = layout.positions[edge.from], let to = layout.positions[edge.to] else { continue }
+                let active: Bool
+                if let highlighted {
+                    active = highlighted.contains(edge.from) && highlighted.contains(edge.to)
+                } else {
+                    active = true
+                }
+                var path = Path()
+                path.move(to: from)
+                let dx = (to.x - from.x) * 0.5
+                path.addCurve(to: to, control1: CGPoint(x: from.x + dx, y: from.y), control2: CGPoint(x: to.x - dx, y: to.y))
+                let width: CGFloat = 1 + 7 * CGFloat(sqrt(abs(edge.value) / maxEdge))
+                let base: Color = edge.value >= 0 ? Theme.up : Theme.down
+                context.stroke(path, with: .color(base.opacity(active ? 0.75 : 0.08)), lineWidth: width)
+            }
+        }
+    }
+}
+
+/// 一个节点(圆点 + 名称 + 净额)。
+private struct TopologyNode: View {
+    let node: FlowGraph.Node
+    let position: CGPoint
+    let radius: CGFloat
+    let active: Bool
+    let isSelected: Bool
+    let onTap: () -> Void
+
+    private var fill: Color {
+        switch node.kind {
+        case .stock: Theme.changeColor(node.net)
+        case .player: Theme.accent
+        case .concept: Theme.muted
+        }
+    }
+
+    private var helpText: String {
+        var text = "\(node.label) \(MoneyFormat.yuan(node.net))"
+        if let reason = node.reason { text += " · \(reason)" }
+        return text
+    }
+
+    var body: some View {
+        Button(action: onTap) {
+            HStack(spacing: 4) {
+                if node.kind == .concept { label }
+                Circle()
+                    .fill(fill.opacity(active ? 1 : 0.25))
+                    .frame(width: radius * 2, height: radius * 2)
+                    .overlay(Circle().stroke(isSelected ? Theme.text : Color.clear, lineWidth: 2))
+                if node.kind != .concept { label }
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .position(position)
+        .help(helpText)
+    }
+
+    private var label: some View {
         VStack(alignment: node.kind == .concept ? .trailing : .leading, spacing: 0) {
             Text(node.label)
                 .font(.system(size: 10, weight: node.kind == .stock ? .regular : .medium))
