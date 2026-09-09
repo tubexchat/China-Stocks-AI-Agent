@@ -6,6 +6,10 @@ name: Release · AShareAgent.dmg
 on:
   push:
     branches: [main]
+    paths-ignore:          # 只改文档不打包
+      - "**.md"
+      - "docs/**"
+      - "LICENSE"
   workflow_dispatch: {}
 
 permissions:
