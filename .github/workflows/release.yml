@@ -135,8 +135,22 @@ jobs:
           tag="v${ver}-${GITHUB_RUN_NUMBER}"
           signed=$([ "$IDENTITY" != "-" ] && echo "Developer ID 签名" || echo "ad-hoc 签名(未公证,首次需右键 → 打开)")
           notes="A股智能体 (AShareAgent) for Mac v${ver},构建 #${GITHUB_RUN_NUMBER}。${signed}。仅支持 Apple Silicon,macOS 14+。提交 ${GITHUB_SHA:0:7}。"
-          gh release create "$tag" build/dmg/*.dmg build/dmg/*.zip build/dmg/latest.json \
-            --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "AShareAgent v${ver} (#${GITHUB_RUN_NUMBER})" --notes "$notes" --latest
+          # GitHub API 偶发 5xx / 网络抖动会让 create 失败:最多重试 3 次;若 release 已存在(上次创建成功但上传中断)则改为补传附件
+          assets=(build/dmg/*.dmg build/dmg/*.zip build/dmg/latest.json)
+          ok=0
+          for attempt in 1 2 3; do
+            if gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+              echo "release $tag 已存在,补传附件(attempt $attempt)"
+              gh release upload "$tag" "${assets[@]}" --repo "$GITHUB_REPOSITORY" --clobber && ok=1 && break
+            else
+              gh release create "$tag" "${assets[@]}" \
+                --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "AShareAgent v${ver} (#${GITHUB_RUN_NUMBER})" --notes "$notes" --latest \
+                && ok=1 && break
+              echo "::warning::gh release create 失败(attempt $attempt),15s 后重试"
+            fi
+            sleep 15
+          done
+          [ "$ok" = 1 ] || { echo "::error::发布 GitHub Release 失败(重试 3 次)"; exit 1; }
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
           echo "url=${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases/tag/${tag}" >> "$GITHUB_OUTPUT"
           echo "download=${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases/download/${tag}/${file}" >> "$GITHUB_OUTPUT"
