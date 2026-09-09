@@ -62,9 +62,12 @@ Lark 群机器人通知(按钮:官网下载 / DMG 直链 / GitHub Release)。
   缺任一则跳过同步。可选 variables:`RELEASES_DIR`(服务器目录)、`RELEASES_KEEP`(保留最近几个版本,默认 5)。
   同步后会回读线上 `/v1/releases/latest` 校验是否已是本次构建,不一致只告警(通常是后端还没部署 releases 接口)。
 
-- 配置 `MAC_SIGNING_P12_BASE64` + `MAC_SIGNING_P12_PASSWORD`(Developer ID Application 证书)则正式签名;
-  再配 `NOTARY_KEY_P8_BASE64` + `NOTARY_KEY_ID` + `NOTARY_ISSUER_ID` 则公证并 staple。
-  没有 secrets 时是 ad-hoc 签名的测试版:可运行,首次需 **右键 → 打开** 绕过 Gatekeeper。
+- **签名与公证(已配置,线上包为正式签名 + Apple 公证)**:secrets `MAC_SIGNING_P12_BASE64` + `MAC_SIGNING_P12_PASSWORD`
+  (Developer ID Application 证书,2031 年 9 月到期)用于签名;`NOTARY_KEY_P8_BASE64` + `NOTARY_KEY_ID` + `NOTARY_ISSUER_ID`
+  (App Store Connect API Team Key)用于公证并 staple。打包前工作流会先解码 p8、打印指纹与各字段哈希并调用一次
+  `notarytool history` 自检,凭据不对会在「Package DMG」这一步直接失败并给出提示;自检结果随失败日志一起推到 `ci-logs` 分支。
+  三项公证 secrets 必须来自同一把 key(Key ID 与 p8 文件名里的 ID 一致)。证书与私钥材料不入库,由账号持有人离线保管。
+  若删掉这些 secrets,产物退化为 ad-hoc 签名的测试版:可运行,首次需 **右键 → 打开**。
 - Lark webhook 默认写在工作流里,配置 `secrets.LARK_WEBHOOK` 可覆盖。
 - CI 失败时日志推到 `ci-logs` 分支(`git fetch origin ci-logs`)。
 
