@@ -81,7 +81,7 @@ jobs:
           NOTARY_PASSWORD: ${{ secrets.NOTARY_PASSWORD }}
           NOTARY_TEAM_ID: ${{ secrets.NOTARY_TEAM_ID }}
         run: |
-          set -eu
+          set -euo pipefail   # pipefail:package-dmg.sh(如公证失败)出错时本步骤必须失败,而不是被 tee/tail 吞掉
           ARGS=(--build "$GITHUB_RUN_NUMBER" --identity "$IDENTITY")
           if [ -n "${NOTARY_B64:-}" ] && [ "$IDENTITY" != "-" ]; then
             echo "$NOTARY_B64" | base64 --decode > "$RUNNER_TEMP/notary.p8"
@@ -90,6 +90,7 @@ jobs:
             ARGS+=(--notary-apple-id "$NOTARY_APPLE_ID" --notary-password "$NOTARY_PASSWORD" --notary-team-id "${NOTARY_TEAM_ID:-A2SZ953D3V}")
           fi
           ./scripts/package-dmg.sh "${ARGS[@]}" 2>&1 | tee build-package.log | tail -15
+          [ -f build/dmg/latest.json ] || { echo "::error::package-dmg.sh 未生成 build/dmg/latest.json(见上方日志,常见原因:公证凭据错误)"; exit 1; }
           echo "dmg=$(python3 -c 'import json;print(json.load(open("build/dmg/latest.json"))["file"])')" >> "$GITHUB_OUTPUT"
 
       - name: Upload artifact (record)
