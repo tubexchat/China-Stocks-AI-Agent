@@ -94,7 +94,8 @@ jobs:
               printf '%s' "$NOTARY_B64" | tr -d '[:space:]' | base64 --decode > "$P8" || { echo "::error::NOTARY_KEY_P8_BASE64 不是合法 base64"; exit 1; }
             fi
             grep -q "BEGIN PRIVATE KEY" "$P8" || { echo "::error::解码后的内容不是 p8 私钥(应以 -----BEGIN PRIVATE KEY----- 开头)"; exit 1; }
-            echo "notary: p8 sha256=$(shasum -a 256 "$P8" | cut -c1-12)… key-id 长度=${#NOTARY_KEY_ID}(应为 10) issuer 长度=${#NOTARY_ISSUER}(应为 36)" | tee build-notary.log
+            h() { printf '%s' "$1" | shasum -a 256 | cut -c1-12; }
+            echo "notary: p8 sha256=$(shasum -a 256 "$P8" | cut -c1-12)… key-id 长度=${#NOTARY_KEY_ID}(应为 10) sha256=$(h "$NOTARY_KEY_ID")… issuer 长度=${#NOTARY_ISSUER}(应为 36) sha256=$(h "$NOTARY_ISSUER")…" | tee build-notary.log
             xcrun notarytool history --key "$P8" --key-id "$NOTARY_KEY_ID" --issuer "$NOTARY_ISSUER" >/dev/null 2>"$RUNNER_TEMP/notary-check.log" \
               || { cat "$RUNNER_TEMP/notary-check.log" | tee -a build-notary.log; echo "::error::公证凭据认证失败:请核对 NOTARY_KEY_P8_BASE64 / NOTARY_KEY_ID / NOTARY_ISSUER_ID 三者是否同一把 App Store Connect API key"; exit 1; }
             echo "notary: 凭据认证通过" | tee -a build-notary.log
