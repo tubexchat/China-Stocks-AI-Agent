@@ -30,7 +30,9 @@ struct BubbleChart: View {
     }
 
     private func symbolSize(_ item: Item) -> CGFloat {
-        CGFloat(40 + 160 * min(max(item.size, 0.2), 3) / 3)
+        let clamped: Double = min(max(item.size, 0.2), 3)
+        let area: Double = 40 + 160 * clamped / 3
+        return CGFloat(area)
     }
 
     var body: some View {

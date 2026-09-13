@@ -188,7 +188,12 @@ enum IndustryStrengthAnalyzer {
                 recentReturns: QuantMath.dailyReturns(Array(p.closes.suffix(21)))
             )
         }
-        rows.sort { ($0.score, $0.rs20 ?? -1, $0.name) > ($1.score, $1.rs20 ?? -1, $1.name) }
+        rows.sort { (a: IndustryStrengthReport.Row, b: IndustryStrengthReport.Row) -> Bool in
+            if a.score != b.score { return a.score > b.score }
+            let x: Double = a.rs20 ?? -1, y: Double = b.rs20 ?? -1
+            if x != y { return x > y }
+            return a.name > b.name
+        }
 
         let breadth = IndustryStrengthReport.Breadth(
             total: rows.count,

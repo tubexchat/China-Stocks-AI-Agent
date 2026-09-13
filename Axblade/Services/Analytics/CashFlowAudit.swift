@@ -209,14 +209,20 @@ enum CashFlowAuditAnalyzer {
         let incomeByEnd = Dictionary(income.map { ($0.period_end_ms, $0) }, uniquingKeysWith: { a, _ in a })
         let balanceByEnd = Dictionary(balance.map { ($0.period_end_ms, $0) }, uniquingKeysWith: { a, _ in a })
         let cashByEnd = Dictionary(cashFlow.map { ($0.period_end_ms, $0) }, uniquingKeysWith: { a, _ in a })
-        let keys = Set(incomeByEnd.keys).union(balanceByEnd.keys).union(cashByEnd.keys).sorted()
-        let periods: [CashFlowAuditReport.Period] = keys.compactMap { end in
-            let i = incomeByEnd[end], b = balanceByEnd[end], c = cashByEnd[end]
-            let reportDates = [i?.report_date_ms, b?.report_date_ms, c?.report_date_ms].compactMap { $0 }
+        var keySet = Set<Int64>(incomeByEnd.keys)
+        keySet.formUnion(balanceByEnd.keys)
+        keySet.formUnion(cashByEnd.keys)
+        let keys: [Int64] = keySet.sorted()
+        let periods: [CashFlowAuditReport.Period] = keys.compactMap { (end: Int64) -> CashFlowAuditReport.Period? in
+            let i: IncomeStatement? = incomeByEnd[end]
+            let b: BalanceSheet? = balanceByEnd[end]
+            let c: CashFlowStatement? = cashByEnd[end]
+            let reportDates: [Int64] = [i?.report_date_ms, b?.report_date_ms, c?.report_date_ms].compactMap { $0 }
             // 披露时点控制:任一张表的披露日晚于 asOf,这一期就还「不该被看到」。
             if let latestReport = reportDates.max(), latestReport > asOfMs { return nil }
-            let label = i?.periodLabel ?? c?.periodLabel ?? b?.periodLabel ?? ShanghaiDate.string(Date(timeIntervalSince1970: Double(end) / 1000))
-            return .init(
+            let fallback: String = ShanghaiDate.string(Date(timeIntervalSince1970: Double(end) / 1000))
+            let label: String = i?.periodLabel ?? c?.periodLabel ?? b?.periodLabel ?? fallback
+            return CashFlowAuditReport.Period(
                 periodEndMs: end, label: label, reportDateMs: reportDates.max(),
                 income: i, balance: b, cashFlow: c,
                 metrics: CashFlowMetrics.compute(income: i, balance: b, cashFlow: c)

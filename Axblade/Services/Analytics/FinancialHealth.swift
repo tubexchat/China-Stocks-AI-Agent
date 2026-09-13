@@ -121,16 +121,24 @@ enum FinancialHealthAnalyzer {
         let incomeByEnd = Dictionary(income.map { ($0.period_end_ms, $0) }, uniquingKeysWith: { a, _ in a })
         let balanceByEnd = Dictionary(balance.map { ($0.period_end_ms, $0) }, uniquingKeysWith: { a, _ in a })
         let cashByEnd = Dictionary(cashFlow.map { ($0.period_end_ms, $0) }, uniquingKeysWith: { a, _ in a })
-        let keys = Set(incomeByEnd.keys).union(balanceByEnd.keys).union(cashByEnd.keys).sorted().suffix(keep)
+        // 分步写明类型:链式 Set/union/sorted/suffix 会让 CI 上的编译器类型推断超时。
+        var keySet = Set<Int64>(incomeByEnd.keys)
+        keySet.formUnion(balanceByEnd.keys)
+        keySet.formUnion(cashByEnd.keys)
+        let sortedKeys: [Int64] = keySet.sorted()
+        let keys: [Int64] = Array(sortedKeys.suffix(keep))
 
-        var periods: [FinancialHealthReport.Period] = keys.map { end in
-            let i = incomeByEnd[end], b = balanceByEnd[end], c = cashByEnd[end]
+        var periods: [FinancialHealthReport.Period] = keys.map { (end: Int64) -> FinancialHealthReport.Period in
+            let i: IncomeStatement? = incomeByEnd[end]
+            let b: BalanceSheet? = balanceByEnd[end]
+            let c: CashFlowStatement? = cashByEnd[end]
             let meta: (any FinancialStatement)? = i ?? c ?? b
-            return .init(
+            let reportDates: [Int64] = [i?.report_date_ms, b?.report_date_ms, c?.report_date_ms].compactMap { $0 }
+            return FinancialHealthReport.Period(
                 periodEndMs: end,
                 label: meta?.periodLabel ?? ShanghaiDate.string(Date(timeIntervalSince1970: Double(end) / 1000)),
                 fiscalYear: meta?.fiscal_year, quarter: meta?.quarterIndex,
-                reportDateMs: [i?.report_date_ms, b?.report_date_ms, c?.report_date_ms].compactMap { $0 }.max(),
+                reportDateMs: reportDates.max(),
                 income: i, balance: b, cashFlow: c,
                 revenue: i?.operating_income, netProfit: i?.net_profit, parentNetProfit: i?.parent_holder_net_profit,
                 operatingProfit: i?.operating_profit, ocf: c?.act_cash_flow_net, capex: c?.pay_fixed_assets_etc_cash,
