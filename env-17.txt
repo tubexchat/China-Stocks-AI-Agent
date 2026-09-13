@@ -1,0 +1,7 @@
++ xcodebuild -version
+Xcode 26.3
+Build version 17C529
++ sw_vers
+ProductName:		macOS
+ProductVersion:		15.7.9
+BuildVersion:		24G830

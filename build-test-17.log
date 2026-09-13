@@ -1,0 +1,745 @@
+Command line invocation:
+    /Applications/Xcode_26.3.app/Contents/Developer/usr/bin/xcodebuild test -project Axblade.xcodeproj -scheme Axblade -destination platform=macOS,arch=arm64
+
+ComputePackagePrebuildTargetDependencyGraph
+
+Prepare packages
+
+CreateBuildRequest
+
+SendProjectDescription
+
+CreateBuildOperation
+
+ComputeTargetDependencyGraph
+note: Building targets in dependency order
+note: Target dependency graph (2 targets)
+    Target 'AxbladeTests' in project 'Axblade'
+        ➜ Explicit dependency on target 'Axblade' in project 'Axblade'
+    Target 'Axblade' in project 'Axblade' (no dependencies)
+
+GatherProvisioningInputs
+
+CreateBuildDescription
+
+ExecuteExternalTool /Applications/Xcode_26.3.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -v -E -dM -isysroot /Applications/Xcode_26.3.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk -x c -c /dev/null
+
+ExecuteExternalTool /Applications/Xcode_26.3.app/Contents/Developer/usr/bin/actool --version --output-format xml1
+
+ExecuteExternalTool /Applications/Xcode_26.3.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc --version
+
+ExecuteExternalTool /Applications/Xcode_26.3.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld -version_details
+
+Build description signature: da58fff4ab633a90245b4841539646b5
+Build description path: /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/XCBuildData/da58fff4ab633a90245b4841539646b5.xcbuilddata
+CreateBuildDirectory /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade.xcodeproj
+    builtin-create-build-directory /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products
+
+CreateBuildDirectory /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade.xcodeproj
+    builtin-create-build-directory /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex
+
+ClangStatCache /Applications/Xcode_26.3.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode_26.3.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk /Users/runner/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/macosx26.2-25C58-dc75598d0054f22ec865fa860f139d723a7ae8a47380b252078bfe6190e59ef2.sdkstatcache
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade.xcodeproj
+    /Applications/Xcode_26.3.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode_26.3.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk -o /Users/runner/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/macosx26.2-25C58-dc75598d0054f22ec865fa860f139d723a7ae8a47380b252078bfe6190e59ef2.sdkstatcache
+
+WriteAuxiliaryFile /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade-9d733be9391b2240250f826cc01d46b6-VFS/all-product-headers.yaml
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade.xcodeproj
+    write-file /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade-9d733be9391b2240250f826cc01d46b6-VFS/all-product-headers.yaml
+
+CreateBuildDirectory /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade.xcodeproj
+    builtin-create-build-directory /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug
+
+CreateBuildDirectory /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade.xcodeproj
+    builtin-create-build-directory /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules
+
+CreateBuildDirectory /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/ExplicitPrecompiledModules
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade.xcodeproj
+    builtin-create-build-directory /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/ExplicitPrecompiledModules
+
+CreateBuildDirectory /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/EagerLinkingTBDs/Debug
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade.xcodeproj
+    builtin-create-build-directory /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/EagerLinkingTBDs/Debug
+
+WriteAuxiliaryFile /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/AxbladeTests.build/empty-AxbladeTests.plist (in target 'AxbladeTests' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    write-file /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/AxbladeTests.build/empty-AxbladeTests.plist
+
+WriteAuxiliaryFile /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/AxbladeTests.build/Objects-normal/arm64/AxbladeTests_const_extract_protocols.json (in target 'AxbladeTests' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    write-file /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/AxbladeTests.build/Objects-normal/arm64/AxbladeTests_const_extract_protocols.json
+
+WriteAuxiliaryFile /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/AxbladeTests.build/Objects-normal/arm64/AxbladeTests.SwiftFileList (in target 'AxbladeTests' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    write-file /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/AxbladeTests.build/Objects-normal/arm64/AxbladeTests.SwiftFileList
+
+WriteAuxiliaryFile /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/AxbladeTests.build/Objects-normal/arm64/AxbladeTests.SwiftConstValuesFileList (in target 'AxbladeTests' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    write-file /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/AxbladeTests.build/Objects-normal/arm64/AxbladeTests.SwiftConstValuesFileList
+
+WriteAuxiliaryFile /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/AxbladeTests.build/Objects-normal/arm64/AxbladeTests.LinkFileList (in target 'AxbladeTests' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    write-file /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/AxbladeTests.build/Objects-normal/arm64/AxbladeTests.LinkFileList
+
+WriteAuxiliaryFile /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/AxbladeTests.build/Objects-normal/arm64/AxbladeTests-OutputFileMap.json (in target 'AxbladeTests' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    write-file /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/AxbladeTests.build/Objects-normal/arm64/AxbladeTests-OutputFileMap.json
+
+WriteAuxiliaryFile /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/AxbladeTests.build/AxbladeTests.hmap (in target 'AxbladeTests' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    write-file /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/AxbladeTests.build/AxbladeTests.hmap
+
+WriteAuxiliaryFile /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/AxbladeTests.build/AxbladeTests.DependencyStaticMetadataFileList (in target 'AxbladeTests' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    write-file /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/AxbladeTests.build/AxbladeTests.DependencyStaticMetadataFileList
+
+WriteAuxiliaryFile /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/AxbladeTests.build/AxbladeTests.DependencyMetadataFileList (in target 'AxbladeTests' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    write-file /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/AxbladeTests.build/AxbladeTests.DependencyMetadataFileList
+
+WriteAuxiliaryFile /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/AxbladeTests.build/AxbladeTests-project-headers.hmap (in target 'AxbladeTests' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    write-file /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/AxbladeTests.build/AxbladeTests-project-headers.hmap
+
+WriteAuxiliaryFile /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/AxbladeTests.build/AxbladeTests-own-target-headers.hmap (in target 'AxbladeTests' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    write-file /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/AxbladeTests.build/AxbladeTests-own-target-headers.hmap
+
+WriteAuxiliaryFile /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/AxbladeTests.build/AxbladeTests-generated-files.hmap (in target 'AxbladeTests' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    write-file /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/AxbladeTests.build/AxbladeTests-generated-files.hmap
+
+WriteAuxiliaryFile /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/AxbladeTests.build/AxbladeTests-all-target-headers.hmap (in target 'AxbladeTests' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    write-file /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/AxbladeTests.build/AxbladeTests-all-target-headers.hmap
+
+WriteAuxiliaryFile /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/AxbladeTests.build/AxbladeTests-all-non-framework-target-headers.hmap (in target 'AxbladeTests' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    write-file /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/AxbladeTests.build/AxbladeTests-all-non-framework-target-headers.hmap
+
+WriteAuxiliaryFile /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/Objects-normal/arm64/Axblade_const_extract_protocols.json (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    write-file /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/Objects-normal/arm64/Axblade_const_extract_protocols.json
+
+WriteAuxiliaryFile /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/Objects-normal/arm64/Axblade-OutputFileMap.json (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    write-file /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/Objects-normal/arm64/Axblade-OutputFileMap.json
+
+WriteAuxiliaryFile /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/Objects-normal/arm64/AShareAgent.SwiftFileList (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    write-file /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/Objects-normal/arm64/AShareAgent.SwiftFileList
+
+WriteAuxiliaryFile /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/Objects-normal/arm64/AShareAgent.SwiftConstValuesFileList (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    write-file /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/Objects-normal/arm64/AShareAgent.SwiftConstValuesFileList
+
+WriteAuxiliaryFile /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/Objects-normal/arm64/AShareAgent.LinkFileList (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    write-file /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/Objects-normal/arm64/AShareAgent.LinkFileList
+
+WriteAuxiliaryFile /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/DerivedSources/Entitlements.plist (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    write-file /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/DerivedSources/Entitlements.plist
+
+WriteAuxiliaryFile /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/AShareAgent.hmap (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    write-file /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/AShareAgent.hmap
+
+WriteAuxiliaryFile /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/AShareAgent.DependencyStaticMetadataFileList (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    write-file /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/AShareAgent.DependencyStaticMetadataFileList
+
+WriteAuxiliaryFile /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/AShareAgent.DependencyMetadataFileList (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    write-file /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/AShareAgent.DependencyMetadataFileList
+
+WriteAuxiliaryFile /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/AShareAgent-project-headers.hmap (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    write-file /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/AShareAgent-project-headers.hmap
+
+WriteAuxiliaryFile /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/AShareAgent-own-target-headers.hmap (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    write-file /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/AShareAgent-own-target-headers.hmap
+
+WriteAuxiliaryFile /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/AShareAgent-generated-files.hmap (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    write-file /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/AShareAgent-generated-files.hmap
+
+WriteAuxiliaryFile /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/AShareAgent-all-target-headers.hmap (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    write-file /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/AShareAgent-all-target-headers.hmap
+
+WriteAuxiliaryFile /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/AShareAgent-all-non-framework-target-headers.hmap (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    write-file /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/AShareAgent-all-non-framework-target-headers.hmap
+
+WriteAuxiliaryFile /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/AShareAgent-DebugDylibPath-normal-arm64.txt (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    write-file /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/AShareAgent-DebugDylibPath-normal-arm64.txt
+
+WriteAuxiliaryFile /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/AShareAgent-DebugDylibInstallName-normal-arm64.txt (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    write-file /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/AShareAgent-DebugDylibInstallName-normal-arm64.txt
+
+MkDir /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/PlugIns/AxbladeTests.xctest/Contents/Resources (in target 'AxbladeTests' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    /bin/mkdir -p /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/PlugIns/AxbladeTests.xctest/Contents/Resources
+
+MkDir /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/PlugIns/AxbladeTests.xctest/Contents/MacOS (in target 'AxbladeTests' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    /bin/mkdir -p /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/PlugIns/AxbladeTests.xctest/Contents/MacOS
+
+MkDir /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/PlugIns/AxbladeTests.xctest/Contents (in target 'AxbladeTests' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    /bin/mkdir -p /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/PlugIns/AxbladeTests.xctest/Contents
+
+MkDir /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/PlugIns/AxbladeTests.xctest (in target 'AxbladeTests' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    /bin/mkdir -p /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/PlugIns/AxbladeTests.xctest
+
+MkDir /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Resources (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    /bin/mkdir -p /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Resources
+
+MkDir /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/PlugIns (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    /bin/mkdir -p /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/PlugIns
+
+MkDir /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/MacOS (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    /bin/mkdir -p /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/MacOS
+
+MkDir /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Frameworks (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    /bin/mkdir -p /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Frameworks
+
+MkDir /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    /bin/mkdir -p /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents
+
+MkDir /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    /bin/mkdir -p /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app
+
+ProcessProductPackaging /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/App/Axblade.entitlements /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/AShareAgent.app.xcent (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    
+    Entitlements:
+    
+    {
+    "com.apple.security.app-sandbox" = 1;
+    "com.apple.security.files.user-selected.read-write" = 1;
+    "com.apple.security.get-task-allow" = 1;
+    "com.apple.security.network.client" = 1;
+}
+    
+    builtin-productPackagingUtility /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/App/Axblade.entitlements -entitlements -format xml -o /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/AShareAgent.app.xcent
+
+ProcessProductPackagingDER /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/AShareAgent.app.xcent /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/AShareAgent.app.xcent.der (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    /usr/bin/derq query -f xml -i /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/AShareAgent.app.xcent -o /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/AShareAgent.app.xcent.der --raw
+
+Ld /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/MacOS/__preview.dylib normal (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    /Applications/Xcode_26.3.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target arm64-apple-macos14.0 -dynamiclib -isysroot /Applications/Xcode_26.3.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk -O0 -L/Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug -F/Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug -install_name @rpath/AShareAgent.debug.dylib -rdynamic -Xlinker -no_deduplicate -Xlinker -dependency_info -Xlinker /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/Objects-normal/arm64/AShareAgent_dependency_info.dat -Xlinker -no_adhoc_codesign -o /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/MacOS/__preview.dylib
+
+MkDir /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/assetcatalog_output/unthinned (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    /bin/mkdir -p /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/assetcatalog_output/unthinned
+
+MkDir /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/assetcatalog_output/thinned (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    /bin/mkdir -p /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/assetcatalog_output/thinned
+
+GenerateAssetSymbols /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Resources/Assets.xcassets (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    /Applications/Xcode_26.3.app/Contents/Developer/usr/bin/actool /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Resources/Assets.xcassets --compile /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Resources --output-format human-readable-text --notices --warnings --export-dependency-info /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/assetcatalog_dependencies --output-partial-info-plist /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/assetcatalog_generated_info.plist --app-icon AppIcon --enable-on-demand-resources NO --development-region en --target-device mac --minimum-deployment-target 14.0 --platform macosx --bundle-identifier io.primit.axblade --generate-swift-asset-symbol-extensions NO --generate-swift-asset-symbols /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/DerivedSources/GeneratedAssetSymbols.swift --generate-objc-asset-symbols /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/DerivedSources/GeneratedAssetSymbols.h --generate-asset-symbol-index /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/DerivedSources/GeneratedAssetSymbols-Index.plist
+/* com.apple.actool.compilation-results */
+/Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/DerivedSources/GeneratedAssetSymbols-Index.plist
+/Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/DerivedSources/GeneratedAssetSymbols.h
+/Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/DerivedSources/GeneratedAssetSymbols.swift
+
+
+Copy /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Frameworks/libXCTestSwiftSupport.dylib /Applications/Xcode_26.3.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/libXCTestSwiftSupport.dylib (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -exclude Headers -exclude PrivateHeaders -exclude Modules -exclude \*.tbd -resolve-src-symlinks /Applications/Xcode_26.3.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/libXCTestSwiftSupport.dylib /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Frameworks
+
+Copy /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Frameworks/libXCTestBundleInject.dylib /Applications/Xcode_26.3.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/libXCTestBundleInject.dylib (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -exclude Headers -exclude PrivateHeaders -exclude Modules -exclude \*.tbd -resolve-src-symlinks /Applications/Xcode_26.3.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/libXCTestBundleInject.dylib /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Frameworks
+
+Copy /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Frameworks/XCUnit.framework /Applications/Xcode_26.3.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks/XCUnit.framework (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -exclude Headers -exclude PrivateHeaders -exclude Modules -exclude \*.tbd -resolve-src-symlinks /Applications/Xcode_26.3.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks/XCUnit.framework /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Frameworks
+
+Copy /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Frameworks/XCUIAutomation.framework /Applications/Xcode_26.3.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks/XCUIAutomation.framework (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -exclude Headers -exclude PrivateHeaders -exclude Modules -exclude \*.tbd -resolve-src-symlinks /Applications/Xcode_26.3.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks/XCUIAutomation.framework /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Frameworks
+
+Copy /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Frameworks/XCTestSupport.framework /Applications/Xcode_26.3.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks/XCTestSupport.framework (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -exclude Headers -exclude PrivateHeaders -exclude Modules -exclude \*.tbd -resolve-src-symlinks /Applications/Xcode_26.3.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks/XCTestSupport.framework /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Frameworks
+
+Copy /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Frameworks/XCTestCore.framework /Applications/Xcode_26.3.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks/XCTestCore.framework (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -exclude Headers -exclude PrivateHeaders -exclude Modules -exclude \*.tbd -resolve-src-symlinks /Applications/Xcode_26.3.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks/XCTestCore.framework /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Frameworks
+
+Copy /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Frameworks/XCTest.framework /Applications/Xcode_26.3.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks/XCTest.framework (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -exclude Headers -exclude PrivateHeaders -exclude Modules -exclude \*.tbd -resolve-src-symlinks /Applications/Xcode_26.3.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks/XCTest.framework /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Frameworks
+
+Copy /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Frameworks/XCTAutomationSupport.framework /Applications/Xcode_26.3.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks/XCTAutomationSupport.framework (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -exclude Headers -exclude PrivateHeaders -exclude Modules -exclude \*.tbd -resolve-src-symlinks /Applications/Xcode_26.3.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks/XCTAutomationSupport.framework /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Frameworks
+
+Copy /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Frameworks/Testing.framework /Applications/Xcode_26.3.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks/Testing.framework (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -exclude Headers -exclude PrivateHeaders -exclude Modules -exclude \*.tbd -resolve-src-symlinks /Applications/Xcode_26.3.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks/Testing.framework /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Frameworks
+
+CompileAssetCatalogVariant thinned /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Resources /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Resources/Assets.xcassets (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    /Applications/Xcode_26.3.app/Contents/Developer/usr/bin/actool /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Resources/Assets.xcassets --compile /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/assetcatalog_output/thinned --output-format human-readable-text --notices --warnings --export-dependency-info /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/assetcatalog_dependencies_thinned --output-partial-info-plist /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/assetcatalog_generated_info.plist_thinned --app-icon AppIcon --enable-on-demand-resources NO --development-region en --target-device mac --minimum-deployment-target 14.0 --platform macosx
+dyld[3216]: symbol '_kFigCaptionRegionDisplayAlign_Before' missing from root that overrides /System/Library/Frameworks/CoreMedia.framework/Versions/A/CoreMedia. Use of that symbol in /System/Library/PrivateFrameworks/AVFCore.framework/Versions/A/AVFCore is being set to 0xBAD4007.
+dyld[3216]: symbol '_kFigCaptionRegionDisplayAlign_After' missing from root that overrides /System/Library/Frameworks/CoreMedia.framework/Versions/A/CoreMedia. Use of that symbol in /System/Library/PrivateFrameworks/AVFCore.framework/Versions/A/AVFCore is being set to 0xBAD4007.
+dyld[3216]: symbol '_kFigCaptionRegionDisplayAlign_Center' missing from root that overrides /System/Library/Frameworks/CoreMedia.framework/Versions/A/CoreMedia. Use of that symbol in /System/Library/PrivateFrameworks/AVFCore.framework/Versions/A/AVFCore is being set to 0xBAD4007.
+dyld[3216]: symbol '_kFigCaptionTextAlign_Start' missing from root that overrides /System/Library/Frameworks/CoreMedia.framework/Versions/A/CoreMedia. Use of that symbol in /System/Library/PrivateFrameworks/AVFCore.framework/Versions/A/AVFCore is being set to 0xBAD4007.
+dyld[3216]: symbol '_kFigCaptionTextAlign_End' missing from root that overrides /System/Library/Frameworks/CoreMedia.framework/Versions/A/CoreMedia. Use of that symbol in /System/Library/PrivateFrameworks/AVFCore.framework/Versions/A/AVFCore is being set to 0xBAD4007.
+dyld[3216]: symbol '_kFigCaptionTextAlign_Center' missing from root that overrides /System/Library/Frameworks/CoreMedia.framework/Versions/A/CoreMedia. Use of that symbol in /System/Library/PrivateFrameworks/AVFCore.framework/Versions/A/AVFCore is being set to 0xBAD4007.
+dyld[3216]: symbol '_kFigCaptionTextAlign_Left' missing from root that overrides /System/Library/Frameworks/CoreMedia.framework/Versions/A/CoreMedia. Use of that symbol in /System/Library/PrivateFrameworks/AVFCore.framework/Versions/A/AVFCore is being set to 0xBAD4007.
+dyld[3216]: symbol '_kFigCaptionTextAlign_Right' missing from root that overrides /System/Library/Frameworks/CoreMedia.framework/Versions/A/CoreMedia. Use of that symbol in /System/Library/PrivateFrameworks/AVFCore.framework/Versions/A/AVFCore is being set to 0xBAD4007.
+dyld[3216]: symbol '_kFigEndpointNotification_AuthenticationSucceeded' missing from root that overrides /System/Library/Frameworks/CoreMedia.framework/Versions/A/CoreMedia. Use of that symbol in /System/Library/PrivateFrameworks/AVFCore.framework/Versions/A/AVFCore is being set to 0xBAD4007.
+dyld[3216]: symbol '_kFigEndpointNotification_iOSUIRequested' missing from root that overrides /System/Library/Frameworks/CoreMedia.framework/Versions/A/CoreMedia. Use of that symbol in /System/Library/PrivateFrameworks/AVFCore.framework/Versions/A/AVFCore is being set to 0xBAD4007.
+dyld[3216]: symbol '_kFigEndpointNotification_SiriRequested' missing from root that overrides /System/Library/Frameworks/CoreMedia.framework/Versions/A/CoreMedia. Use of that symbol in /System/Library/PrivateFrameworks/AVFCore.framework/Versions/A/AVFCore is being set to 0xBAD4007.
+dyld[3216]: symbol '_kFigEndPointNotification_EnhancedSiriParametersChanged' missing from root that overrides /System/Library/Frameworks/CoreMedia.framework/Versions/A/CoreMedia. Use of that symbol in /System/Library/PrivateFrameworks/AVFCore.framework/Versions/A/AVFCore is being set to 0xBAD4007.
+dyld[3216]: symbol '_kFigEndpointNotification_NightModeChanged' missing from root that overrides /System/Library/Frameworks/CoreMedia.framework/Versions/A/CoreMedia. Use of that symbol in /System/Library/PrivateFrameworks/AVFCore.framework/Versions/A/AVFCore is being set to 0xBAD4007.
+dyld[3216]: symbol '_kFigEndpointNotification_LimitedUIChanged' missing from root that overrides /System/Library/Frameworks/CoreMedia.framework/Versions/A/CoreMedia. Use of that symbol in /System/Library/PrivateFrameworks/AVFCore.framework/Versions/A/AVFCore is being set to 0xBAD4007.
+dyld[3216]: symbol '_kFigEndpointNotification_PerformanceReportPosted' missing from root that overrides /System/Library/Frameworks/CoreMedia.framework/Versions/A/CoreMedia. Use of that symbol in /System/Library/PrivateFrameworks/AVFCore.framework/Versions/A/AVFCore is being set to 0xBAD4007.
+dyld[3216]: symbol '_kFigEndpointNotification_UnhandledRemoteEvent' missing from root that overrides /System/Library/Frameworks/CoreMedia.framework/Versions/A/CoreMedia. Use of that symbol in /System/Library/PrivateFrameworks/AVFCore.framework/Versions/A/AVFCore is being set to 0xBAD4007.
+dyld[3216]: symbol '_kFigEndpointNotification_CarPlayTest' missing from root that overrides /System/Library/Frameworks/CoreMedia.framework/Versions/A/CoreMedia. Use of that symbol in /System/Library/PrivateFrameworks/AVFCore.framework/Versions/A/AVFCore is being set to 0xBAD4007.
+dyld[3216]: symbol '_kFigVideoQueueNotification_NowBelowLowWaterLevel' missing from root that overrides /System/Library/Frameworks/MediaToolbox.framework/Versions/A/MediaToolbox. Use of that symbol in /System/Library/PrivateFrameworks/AVFCore.framework/Versions/A/AVFCore is being set to 0xBAD4007.
+dyld[3216]: symbol '_kFigVideoQueueNotification_DecodeError' missing from root that overrides /System/Library/Frameworks/MediaToolbox.framework/Versions/A/MediaToolbox. Use of that symbol in /System/Library/PrivateFrameworks/AVFCore.framework/Versions/A/AVFCore is being set to 0xBAD4007.
+dyld[3216]: symbol '_kFigVideoQueueNotification_Failed' missing from root that overrides /System/Library/Frameworks/MediaToolbox.framework/Versions/A/MediaToolbox. Use of that symbol in /System/Library/PrivateFrameworks/AVFCore.framework/Versions/A/AVFCore is being set to 0xBAD4007.
+dyld[3216]: symbol '_kFigVideoQueueNotification_ExternalProtectionStatusChanged' missing from root that overrides /System/Library/Frameworks/MediaToolbox.framework/Versions/A/MediaToolbox. Use of that symbol in /System/Library/PrivateFrameworks/AVFCore.framework/Versions/A/AVFCore is being set to 0xBAD4007.
+dyld[3216]: symbol '_kFigVideoQueueNotification_FlushComplete' missing from root that overrides /System/Library/Frameworks/MediaToolbox.framework/Versions/A/MediaToolbox. Use of that symbol in /System/Library/PrivateFrameworks/AVFCore.framework/Versions/A/AVFCore is being set to 0xBAD4007.
+dyld[3216]: symbol '_kFigVideoQueueNotification_CompletedDecodeForPreroll' missing from root that overrides /System/Library/Frameworks/MediaToolbox.framework/Versions/A/MediaToolbox. Use of that symbol in /System/Library/PrivateFrameworks/AVFCore.framework/Versions/A/AVFCore is being set to 0xBAD4007.
+dyld[3216]: symbol '_kFigVideoQueueNotification_FirstVideoFrameEnqueued' missing from root that overrides /System/Library/Frameworks/MediaToolbox.framework/Versions/A/MediaToolbox. Use of that symbol in /System/Library/PrivateFrameworks/AVFCore.framework/Versions/A/AVFCore is being set to 0xBAD4007.
+dyld[3216]: symbol '_kFigVideoQueueNotification_LostDecoderState' missing from root that overrides /System/Library/Frameworks/MediaToolbox.framework/Versions/A/MediaToolbox. Use of that symbol in /System/Library/PrivateFrameworks/AVFCore.framework/Versions/A/AVFCore is being set to 0xBAD4007.
+dyld[3216]: symbol '_OBJC_CLASS_$_FigBaseCALayer' missing from root that overrides /System/Library/Frameworks/MediaToolbox.framework/Versions/A/MediaToolbox. Use of that symbol in /System/Library/PrivateFrameworks/AVFCore.framework/Versions/A/AVFCore is being set to 0xBAD4007.
+dyld[3216]: symbol '_OBJC_METACLASS_$_FigBaseCALayer' missing from root that overrides /System/Library/Frameworks/MediaToolbox.framework/Versions/A/MediaToolbox. Use of that symbol in /System/Library/PrivateFrameworks/AVFCore.framework/Versions/A/AVFCore is being set to 0xBAD4007.
+/* com.apple.actool.compilation-results */
+/Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/assetcatalog_generated_info.plist_thinned
+/Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/assetcatalog_output/thinned/AppIcon.icns
+/Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/assetcatalog_output/thinned/Assets.car
+
+
+CodeSign /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Frameworks/libXCTestSwiftSupport.dylib (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    
+    Signing Identity:     "Sign to Run Locally"
+    
+    /usr/bin/codesign --force --sign - --timestamp\=none --preserve-metadata\=identifier,entitlements,flags --generate-entitlement-der /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Frameworks/libXCTestSwiftSupport.dylib
+/Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Frameworks/libXCTestSwiftSupport.dylib: replacing existing signature
+
+CodeSign /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Frameworks/libXCTestBundleInject.dylib (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    
+    Signing Identity:     "Sign to Run Locally"
+    
+    /usr/bin/codesign --force --sign - --timestamp\=none --preserve-metadata\=identifier,entitlements,flags --generate-entitlement-der /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Frameworks/libXCTestBundleInject.dylib
+/Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Frameworks/libXCTestBundleInject.dylib: replacing existing signature
+
+CodeSign /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Frameworks/XCUnit.framework (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    
+    Signing Identity:     "Sign to Run Locally"
+    
+    /usr/bin/codesign --force --sign - --timestamp\=none --preserve-metadata\=identifier,entitlements,flags --generate-entitlement-der /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Frameworks/XCUnit.framework
+/Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Frameworks/XCUnit.framework: replacing existing signature
+
+CodeSign /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Frameworks/XCUIAutomation.framework (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    
+    Signing Identity:     "Sign to Run Locally"
+    
+    /usr/bin/codesign --force --sign - --timestamp\=none --preserve-metadata\=identifier,entitlements,flags --generate-entitlement-der /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Frameworks/XCUIAutomation.framework
+/Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Frameworks/XCUIAutomation.framework: replacing existing signature
+
+CodeSign /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Frameworks/XCTestSupport.framework (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    
+    Signing Identity:     "Sign to Run Locally"
+    
+    /usr/bin/codesign --force --sign - --timestamp\=none --preserve-metadata\=identifier,entitlements,flags --generate-entitlement-der /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Frameworks/XCTestSupport.framework
+/Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Frameworks/XCTestSupport.framework: replacing existing signature
+
+CodeSign /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Frameworks/XCTestCore.framework (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    
+    Signing Identity:     "Sign to Run Locally"
+    
+    /usr/bin/codesign --force --sign - --timestamp\=none --preserve-metadata\=identifier,entitlements,flags --generate-entitlement-der /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Frameworks/XCTestCore.framework
+/Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Frameworks/XCTestCore.framework: replacing existing signature
+
+CodeSign /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Frameworks/XCTest.framework (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    
+    Signing Identity:     "Sign to Run Locally"
+    
+    /usr/bin/codesign --force --sign - --timestamp\=none --preserve-metadata\=identifier,entitlements,flags --generate-entitlement-der /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Frameworks/XCTest.framework
+/Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Frameworks/XCTest.framework: replacing existing signature
+
+CodeSign /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Frameworks/XCTAutomationSupport.framework (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    
+    Signing Identity:     "Sign to Run Locally"
+    
+    /usr/bin/codesign --force --sign - --timestamp\=none --preserve-metadata\=identifier,entitlements,flags --generate-entitlement-der /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Frameworks/XCTAutomationSupport.framework
+/Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Frameworks/XCTAutomationSupport.framework: replacing existing signature
+
+CodeSign /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Frameworks/Testing.framework (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    
+    Signing Identity:     "Sign to Run Locally"
+    
+    /usr/bin/codesign --force --sign - --timestamp\=none --preserve-metadata\=identifier,entitlements,flags --generate-entitlement-der /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Frameworks/Testing.framework
+/Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Frameworks/Testing.framework: replacing existing signature
+
+LinkAssetCatalog /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Resources/Assets.xcassets (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    builtin-linkAssetCatalog --thinned /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/assetcatalog_output/thinned --thinned-dependencies /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/assetcatalog_dependencies_thinned --thinned-info-plist-content /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/assetcatalog_generated_info.plist_thinned --unthinned /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/assetcatalog_output/unthinned --unthinned-dependencies /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/assetcatalog_dependencies_unthinned --unthinned-info-plist-content /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/assetcatalog_generated_info.plist_unthinned --output /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Resources --plist-output /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/assetcatalog_generated_info.plist
+note: Emplaced /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Resources/Assets.car (in target 'Axblade' from project 'Axblade')
+note: Emplaced /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Resources/AppIcon.icns (in target 'Axblade' from project 'Axblade')
+
+ProcessInfoPlistFile /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Info.plist /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/App/Info.plist (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    builtin-infoPlistUtility /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/App/Info.plist -producttype com.apple.product-type.application -genpkginfo /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/PkgInfo -expandbuildsettings -platform macosx -additionalcontentfile /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/assetcatalog_generated_info.plist -o /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/AShareAgent.app/Contents/Info.plist
+
+SwiftDriver Axblade normal arm64 com.apple.xcode.tools.swift.compiler (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    builtin-SwiftDriver -- /Applications/Xcode_26.3.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name Axblade -Onone -enforce-exclusivity\=checked @/Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/Objects-normal/arm64/AShareAgent.SwiftFileList -DDEBUG -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode_26.3.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk -target arm64-apple-macos14.0 -g -module-cache-path /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -index-store-path /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 6 -I /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug -F /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug -c -j3 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/runner/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/macosx26.2-25C58-dc75598d0054f22ec865fa860f139d723a7ae8a47380b252078bfe6190e59ef2.sdkstatcache -output-file-map /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/Objects-normal/arm64/Axblade-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -sdk-module-cache-path /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/Objects-normal/arm64/Axblade.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/Objects-normal/arm64/Axblade_const_extract_protocols.json -Xcc -iquote -Xcc /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/AShareAgent-generated-files.hmap -Xcc -I/Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/AShareAgent-own-target-headers.hmap -Xcc -I/Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/AShareAgent-all-target-headers.hmap -Xcc -iquote -Xcc /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/AShareAgent-project-headers.hmap -Xcc -I/Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/include -Xcc -I/Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/DerivedSources-normal/arm64 -Xcc -I/Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/DerivedSources/arm64 -Xcc -I/Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/DerivedSources -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/Objects-normal/arm64/Axblade-Swift.h -working-directory /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent -experimental-emit-module-separately -disable-cmo
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/_Builtin_stddef-55EAMTPZ4LZPQNCDCG5ZNCKQS.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/SwiftShims-67OEPFLGQYPPLLEHMM60YH7DS.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/_SwiftConcurrencyShims-9D8SO3N8PNWYDH7TYCZTWPZU.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/_AvailabilityInternal-3OYDZ74KEGK9VEIWTKELS65F9.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/_Builtin_stdbool-AVHSAOBZB7VDS46CCJSF3O9TZ.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/_Builtin_stdarg-2B81KTXX1SNFM5QZ7EPAXLR5G.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/ptrauth-ABFZG6I7E8IC1B6EHVK4YFQ6R.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/_Builtin_float-13GO7YNTXT97QY7R5BC0N6Z1T.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/ptrcheck-BAZZGUG06HVKTT9SQDDT7CJ24.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/DeveloperToolsSupport-ATITA2DR5PTE0PG5KUT01POU9.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/_DarwinFoundation1-392UG0OPX0WRLMCDG9YFQMN5W.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/_DarwinFoundation2-8W69RHU48LP84ORMAPE74S08M.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/_Builtin_limits-EW9MMD7I5PNV797A6Y6SA3R4J.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/_Builtin_stdint-9CJ70TC2FKUSX1H484210CWG5.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/sys_types-9OFMTBFNO89DIZFXSK2XJ0EKB.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/_Builtin_tgmath-8S6F1BYN669L0B3R3FBB9F4SR.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/_Builtin_stdatomic-39TJTU5JFZ9A454GKBQVCYC4Q.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/_DarwinFoundation3-6VKFUIZRXBUM7M8T079N17S2E.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/_Builtin_intrinsics-QB2OU0NRHDQENMV39PARDAK4.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/OpenGL-3U1BBFQ0B7D4DG4D5GF8RSIEM.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/libDER-3G23RDW78KSCB8BG5L81SB65A.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/_Builtin_inttypes-2461J0EQE2QAZR3LZ4JQ37N6U.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Darwin-2Z6ASNTI62KWSFWZ2X1XQSJY7.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/simd-D8IMO4PM748N61LVIBEQMOAHN.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/libkern-6U09WOZDGSUSLICY8361A23Z8.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/CUPS-1SRHSDIDJ4385LRG819CJAMT5.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/launch-9UIY2EEU4OTE615LGNCSPFI7Z.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/MachO-41O1IHM1UJFRN1CX7P05GLZ5M.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Spatial-23KV1Y40KHG8XVFGHHIWU0178.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/ObjectiveC-C1ZG4I4EUW1MRC71KPWHCF42J.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/os_object-7FQZ77BXR9N2H7USPKNMXHAGY.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/os_workgroup-5AMSHSE447JNGHFU71AIIZ4JQ.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Dispatch-15RKA8CB219XXRU6JYKP2Z738.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/XPC-CITKNEZUFBGYG515KQYOHPQVQ.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/CoreFoundation-82OGX68VKNPMODA698LC9LH9V.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/os-2VZ8UYXOPMNUWFALX8YS6ZXCG.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/CFNetwork-88UGJ65REFY2OQYLFEBEGBCVU.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/IOKit-1359UOWZPKQKR6EPJXZPI6OCZ.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Security-8T1113C0ETHCCCHA5MEMHGF7C.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/ColorSync-4ZTK19K0JR8T5VSXDXCNVRXOC.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/CoreGraphics-27AZAYQQ7DJ7K66FQ3FWOANEC.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/DiskArbitration-F40LPNUY0CK2L0HH9PMVZ7XEZ.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/CoreServices-CX2AB7VI2W8EL78RYRDX7WC24.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/ImageIO-DPVQ4HMOLKK9QPNDIFCPQH5SQ.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/CoreText-9079AMJ9I2IY0OROWMSLZ95U4.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Foundation-ANUUA59VDZ3BJR7UNP6GSIE1J.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/IOSurface-5IQHOG1LL4YIAX23G73JZX1KR.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/UniformTypeIdentifiers-5TKTTIKL6HKRSOMKTE7G2Q0CJ.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Symbols-1ULO3H5QT68WXC8MKM49H4EZI.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/CoreData-B7DOAOVUQEAQ7P3VZGZ4E9LQL.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Accessibility-27VI8PA4B1N3H7V7L0KJKJEL9.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Metal-8CODKA4H7AWMFKK6ZNKYZ92ZE.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/OSLog-2IU1X1KR1OQ1477JYD3I5AL3P.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/ApplicationServices-4JGDP5DR9T7ULFEAA4SOPCF4S.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/CoreTransferable-6Y64NJP9ISBH4Z7AB8MZ2G7HR.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/DataDetection-3VOJTP8UAA30671TBQ83O9ZK2.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/CoreVideo-81S6TK5Q222HF4NW3WMWZ5YUB.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/CoreImage-EWVCJ1QWW4GU3FJJ4MPN5VIM4.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/QuartzCore-CXEDMP598R33NEZQFDEWQB6IW.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/SwiftUICore-5DUSAGNVLGB3JXW2MT3VS6G8Z.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/AppKit-875Q1QS3GNA6NNE53CBUITCWD.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/SwiftUI-50XCFQIRFFV88OKSL3NLP8WYV.pcm
+
+SwiftEmitModule normal arm64 Emitting\ module\ for\ Axblade (in target 'Axblade' from project 'Axblade')
+
+EmitSwiftModule normal arm64 (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    
+
+SwiftCompile normal arm64 Compiling\ FinancialHealthView.swift,\ FuyaoClient.swift,\ FuyaoModels.swift,\ GBDT.swift,\ GBDTForecaster.swift,\ HeatRadar.swift,\ HeatRadarView.swift,\ IndustryMatrixView.swift,\ IndustryStrength.swift,\ KeychainStore.swift,\ L10nEnvironment.swift,\ LimitUpPulse.swift,\ LimitUpPulseView.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Views/Modules/FinancialHealthView.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/Fuyao/FuyaoClient.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Models/FuyaoModels.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/Quant/GBDT.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/Quant/GBDTForecaster.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/Analytics/HeatRadar.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Views/Modules/HeatRadarView.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Views/Modules/IndustryMatrixView.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/Analytics/IndustryStrength.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/KeychainStore.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Views/L10nEnvironment.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/Analytics/LimitUpPulse.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Views/Modules/LimitUpPulseView.swift (in target 'Axblade' from project 'Axblade')
+SwiftCompile normal arm64 /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Views/Modules/FinancialHealthView.swift (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    
+
+SwiftCompile normal arm64 /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/Fuyao/FuyaoClient.swift (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    
+
+SwiftCompile normal arm64 /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Models/FuyaoModels.swift (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    
+
+SwiftCompile normal arm64 /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/Quant/GBDT.swift (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    
+
+SwiftCompile normal arm64 /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/Quant/GBDTForecaster.swift (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    
+
+SwiftCompile normal arm64 /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/Analytics/HeatRadar.swift (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    
+
+SwiftCompile normal arm64 /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Views/Modules/HeatRadarView.swift (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    
+
+SwiftCompile normal arm64 /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Views/Modules/IndustryMatrixView.swift (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    
+
+SwiftCompile normal arm64 /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/Analytics/IndustryStrength.swift (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    
+
+SwiftCompile normal arm64 /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/KeychainStore.swift (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    
+
+SwiftCompile normal arm64 /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Views/L10nEnvironment.swift (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    
+
+SwiftCompile normal arm64 /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/Analytics/LimitUpPulse.swift (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    
+
+SwiftCompile normal arm64 /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Views/Modules/LimitUpPulseView.swift (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    
+
+SwiftCompile normal arm64 Compiling\ AShareDataService.swift,\ AppViewModel.swift,\ AxbladeApp.swift,\ Backtester.swift,\ BrandMark.swift,\ CashFlowAudit.swift,\ CashFlowAuditView.swift,\ ChartViews.swift,\ DragonTigerAnalytics.swift,\ DragonTigerTopologyView.swift,\ DragonTigerWatchView.swift,\ FactorMiner.swift,\ FinancialCharts.swift,\ FinancialHealth.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/Fuyao/AShareDataService.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/ViewModels/AppViewModel.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/App/AxbladeApp.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/Quant/Backtester.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Views/BrandMark.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/Analytics/CashFlowAudit.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Views/Modules/CashFlowAuditView.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Views/Modules/ChartViews.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/Analytics/DragonTigerAnalytics.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Views/Modules/DragonTigerTopologyView.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Views/Modules/DragonTigerWatchView.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/Quant/FactorMiner.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Views/Modules/FinancialCharts.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/Analytics/FinancialHealth.swift (in target 'Axblade' from project 'Axblade')
+Failed frontend command:
+/Applications/Xcode_26.3.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swift-frontend -frontend -c -primary-file /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/Fuyao/AShareDataService.swift -primary-file /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/ViewModels/AppViewModel.swift -primary-file /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/App/AxbladeApp.swift -primary-file /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/Quant/Backtester.swift -primary-file /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Views/BrandMark.swift -primary-file /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/Analytics/CashFlowAudit.swift -primary-file /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Views/Modules/CashFlowAuditView.swift -primary-file /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Views/Modules/ChartViews.swift -primary-file /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/Analytics/DragonTigerAnalytics.swift -primary-file /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Views/Modules/DragonTigerTopologyView.swift -primary-file /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Views/Modules/DragonTigerWatchView.swift -primary-file /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/Quant/FactorMiner.swift -primary-file /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Views/Modules/FinancialCharts.swift -primary-file /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/Analytics/FinancialHealth.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Views/Modules/FinancialHealthView.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/Fuyao/FuyaoClient.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Models/FuyaoModels.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/Quant/GBDT.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/Quant/GBDTForecaster.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/Analytics/HeatRadar.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Views/Modules/HeatRadarView.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Views/Modules/IndustryMatrixView.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/Analytics/IndustryStrength.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/KeychainStore.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Views/L10nEnvironment.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/Analytics/LimitUpPulse.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Views/Modules/LimitUpPulseView.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/Localization.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Models/MarketModels.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/Analytics/MarketTrend.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Views/Modules/MarketTrendView.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Models/Models.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/ViewModels/ModuleModels.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Views/Modules/ModulesView.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/Quant/QuantMath.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/SettingsStore.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Views/SettingsView.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Views/SidebarView.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Views/Theme.swift /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/DerivedSources/GeneratedAssetSymbols.swift -supplementary-output-file-map /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/Objects-normal/arm64/supplementaryOutputs-1 -target arm64-apple-macos14.0 -module-can-import-version DeveloperToolsSupport 23.0.4 23.0.4 -load-resolved-plugin /Applications/Xcode_26.3.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/swift/host/plugins/libFoundationMacros.dylib\#/Applications/Xcode_26.3.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/bin/swift-plugin-server\#FoundationMacros -load-resolved-plugin /Applications/Xcode_26.3.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/swift/host/plugins/libObservationMacros.dylib\#/Applications/Xcode_26.3.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/bin/swift-plugin-server\#ObservationMacros -load-resolved-plugin /Applications/Xcode_26.3.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/swift/host/plugins/libPreviewsMacros.dylib\#/Applications/Xcode_26.3.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/bin/swift-plugin-server\#PreviewsMacros -load-resolved-plugin /Applications/Xcode_26.3.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/swift/host/plugins/libSwiftMacros.dylib\#/Applications/Xcode_26.3.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/bin/swift-plugin-server\#SwiftMacros -load-resolved-plugin /Applications/Xcode_26.3.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/swift/host/plugins/libSwiftUIMacros.dylib\#/Applications/Xcode_26.3.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/bin/swift-plugin-server\#SwiftUIMacros -disable-implicit-swift-modules -Xcc -fno-implicit-modules -Xcc -fno-implicit-module-maps -explicit-swift-module-map-file /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/Objects-normal/arm64/Axblade-dependencies-1.json -Xllvm -aarch64-use-tbi -enable-objc-interop -stack-check -sdk /Applications/Xcode_26.3.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk -I /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug -F /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug -no-color-diagnostics -Xcc -fno-color-diagnostics -enable-testing -g -debug-info-format\=dwarf -dwarf-version\=4 -module-cache-path /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -swift-version 6 -enforce-exclusivity\=checked -Onone -D DEBUG -serialize-debugging-options -const-gather-protocols-file /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/Objects-normal/arm64/Axblade_const_extract_protocols.json -enable-experimental-feature DebugDescriptionMacro -empty-abi-descriptor -validate-clang-modules-once -clang-build-session-file /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -working-directory -Xcc /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent -enable-anonymous-context-mangled-names -file-compilation-dir /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -Xcc -ivfsstatcache -Xcc /Users/runner/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/macosx26.2-25C58-dc75598d0054f22ec865fa860f139d723a7ae8a47380b252078bfe6190e59ef2.sdkstatcache -Xcc -I/Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/swift-overrides.hmap -Xcc -iquote -Xcc /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/AShareAgent-generated-files.hmap -Xcc -I/Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/AShareAgent-own-target-headers.hmap -Xcc -I/Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/AShareAgent-all-target-headers.hmap -Xcc -iquote -Xcc /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/AShareAgent-project-headers.hmap -Xcc -I/Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/include -Xcc -I/Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/DerivedSources-normal/arm64 -Xcc -I/Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/DerivedSources/arm64 -Xcc -I/Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/DerivedSources -Xcc -DDEBUG\=1 -no-auto-bridging-header-chaining -module-name Axblade -frontend-parseable-output -disable-clang-spi -target-sdk-version 26.2 -target-sdk-name macosx26.2 -clang-target arm64-apple-macos26.2 -in-process-plugin-server-path /Applications/Xcode_26.3.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/libSwiftInProcPluginServer.dylib -o /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/Objects-normal/arm64/AShareDataService.o -o /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/Objects-normal/arm64/AppViewModel.o -o /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/Objects-normal/arm64/AxbladeApp.o -o /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/Objects-normal/arm64/Backtester.o -o /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/Objects-normal/arm64/BrandMark.o -o /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/Objects-normal/arm64/CashFlowAudit.o -o /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/Objects-normal/arm64/CashFlowAuditView.o -o /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/Objects-normal/arm64/ChartViews.o -o /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/Objects-normal/arm64/DragonTigerAnalytics.o -o /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/Objects-normal/arm64/DragonTigerTopologyView.o -o /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/Objects-normal/arm64/DragonTigerWatchView.o -o /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/Objects-normal/arm64/FactorMiner.o -o /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/Objects-normal/arm64/FinancialCharts.o -o /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/Objects-normal/arm64/FinancialHealth.o -index-unit-output-path /Axblade.build/Debug/Axblade.build/Objects-normal/arm64/AShareDataService.o -index-unit-output-path /Axblade.build/Debug/Axblade.build/Objects-normal/arm64/AppViewModel.o -index-unit-output-path /Axblade.build/Debug/Axblade.build/Objects-normal/arm64/AxbladeApp.o -index-unit-output-path /Axblade.build/Debug/Axblade.build/Objects-normal/arm64/Backtester.o -index-unit-output-path /Axblade.build/Debug/Axblade.build/Objects-normal/arm64/BrandMark.o -index-unit-output-path /Axblade.build/Debug/Axblade.build/Objects-normal/arm64/CashFlowAudit.o -index-unit-output-path /Axblade.build/Debug/Axblade.build/Objects-normal/arm64/CashFlowAuditView.o -index-unit-output-path /Axblade.build/Debug/Axblade.build/Objects-normal/arm64/ChartViews.o -index-unit-output-path /Axblade.build/Debug/Axblade.build/Objects-normal/arm64/DragonTigerAnalytics.o -index-unit-output-path /Axblade.build/Debug/Axblade.build/Objects-normal/arm64/DragonTigerTopologyView.o -index-unit-output-path /Axblade.build/Debug/Axblade.build/Objects-normal/arm64/DragonTigerWatchView.o -index-unit-output-path /Axblade.build/Debug/Axblade.build/Objects-normal/arm64/FactorMiner.o -index-unit-output-path /Axblade.build/Debug/Axblade.build/Objects-normal/arm64/FinancialCharts.o -index-unit-output-path /Axblade.build/Debug/Axblade.build/Objects-normal/arm64/FinancialHealth.o -index-store-path /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Index.noindex/DataStore -index-system-modules
+
+SwiftCompile normal arm64 /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/Fuyao/AShareDataService.swift (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    
+
+SwiftCompile normal arm64 /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/ViewModels/AppViewModel.swift (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    
+
+SwiftCompile normal arm64 /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/App/AxbladeApp.swift (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    
+
+SwiftCompile normal arm64 /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/Quant/Backtester.swift (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    
+
+SwiftCompile normal arm64 /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Views/BrandMark.swift (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    
+
+SwiftCompile normal arm64 /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/Analytics/CashFlowAudit.swift (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    
+
+SwiftCompile normal arm64 /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Views/Modules/CashFlowAuditView.swift (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    
+
+SwiftCompile normal arm64 /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Views/Modules/ChartViews.swift (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    
+
+SwiftCompile normal arm64 /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/Analytics/DragonTigerAnalytics.swift (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    
+
+SwiftCompile normal arm64 /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Views/Modules/DragonTigerTopologyView.swift (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    
+
+SwiftCompile normal arm64 /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Views/Modules/DragonTigerWatchView.swift (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    
+
+SwiftCompile normal arm64 /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/Quant/FactorMiner.swift (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    
+
+SwiftCompile normal arm64 /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Views/Modules/FinancialCharts.swift (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    
+
+SwiftCompile normal arm64 /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/Analytics/FinancialHealth.swift (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    
+/Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/Analytics/FinancialHealth.swift:126:13: error: the compiler is unable to type-check this expression in reasonable time; try breaking up the expression into distinct sub-expressions
+        var periods: [FinancialHealthReport.Period] = keys.map { end in
+            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+SwiftCompile normal arm64 Compiling\ Localization.swift,\ MarketModels.swift,\ MarketTrend.swift,\ MarketTrendView.swift,\ Models.swift,\ ModuleModels.swift,\ ModulesView.swift,\ QuantMath.swift,\ SettingsStore.swift,\ SettingsView.swift,\ SidebarView.swift,\ Theme.swift,\ GeneratedAssetSymbols.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/Localization.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Models/MarketModels.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/Analytics/MarketTrend.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Views/Modules/MarketTrendView.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Models/Models.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/ViewModels/ModuleModels.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Views/Modules/ModulesView.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/Quant/QuantMath.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/SettingsStore.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Views/SettingsView.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Views/SidebarView.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Views/Theme.swift /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/DerivedSources/GeneratedAssetSymbols.swift (in target 'Axblade' from project 'Axblade')
+SwiftCompile normal arm64 /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/Localization.swift (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    
+
+SwiftCompile normal arm64 /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Models/MarketModels.swift (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    
+
+SwiftCompile normal arm64 /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/Analytics/MarketTrend.swift (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    
+
+SwiftCompile normal arm64 /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Views/Modules/MarketTrendView.swift (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    
+
+SwiftCompile normal arm64 /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Models/Models.swift (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    
+
+SwiftCompile normal arm64 /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/ViewModels/ModuleModels.swift (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    
+
+SwiftCompile normal arm64 /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Views/Modules/ModulesView.swift (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    
+
+SwiftCompile normal arm64 /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/Quant/QuantMath.swift (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    
+
+SwiftCompile normal arm64 /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/SettingsStore.swift (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    
+
+SwiftCompile normal arm64 /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Views/SettingsView.swift (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    
+
+SwiftCompile normal arm64 /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Views/SidebarView.swift (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    
+
+SwiftCompile normal arm64 /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Views/Theme.swift (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    
+
+SwiftCompile normal arm64 /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/DerivedSources/GeneratedAssetSymbols.swift (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    
+
+SwiftDriverJobDiscovery normal arm64 Emitting module for Axblade (in target 'Axblade' from project 'Axblade')
+
+SwiftDriver\ Compilation\ Requirements Axblade normal arm64 com.apple.xcode.tools.swift.compiler (in target 'Axblade' from project 'Axblade')
+    cd /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent
+    builtin-Swift-Compilation-Requirements -- /Applications/Xcode_26.3.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name Axblade -Onone -enforce-exclusivity\=checked @/Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/Objects-normal/arm64/AShareAgent.SwiftFileList -DDEBUG -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode_26.3.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk -target arm64-apple-macos14.0 -g -module-cache-path /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -index-store-path /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 6 -I /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug -F /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug -c -j3 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/runner/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/macosx26.2-25C58-dc75598d0054f22ec865fa860f139d723a7ae8a47380b252078bfe6190e59ef2.sdkstatcache -output-file-map /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/Objects-normal/arm64/Axblade-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -sdk-module-cache-path /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/Objects-normal/arm64/Axblade.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/runner/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/Objects-normal/arm64/Axblade_const_extract_protocols.json -Xcc -iquote -Xcc /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/AShareAgent-generated-files.hmap -Xcc -I/Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/AShareAgent-own-target-headers.hmap -Xcc -I/Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/AShareAgent-all-target-headers.hmap -Xcc -iquote -Xcc /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/AShareAgent-project-headers.hmap -Xcc -I/Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Products/Debug/include -Xcc -I/Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/DerivedSources-normal/arm64 -Xcc -I/Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/DerivedSources/arm64 -Xcc -I/Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/DerivedSources -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Build/Intermediates.noindex/Axblade.build/Debug/Axblade.build/Objects-normal/arm64/Axblade-Swift.h -working-directory /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent -experimental-emit-module-separately -disable-cmo
+
+note: Disabling hardened runtime with ad-hoc codesigning. (in target 'Axblade' from project 'Axblade')
+
+Test session results, code coverage, and logs:
+	/Users/runner/Library/Developer/Xcode/DerivedData/Axblade-eposwudgntvwjpaonpnssagbkmfr/Logs/Test/Test-Axblade-2026.09.13_00-03-56-+0000.xcresult
+
+Testing failed:
+	The compiler is unable to type-check this expression in reasonable time; try breaking up the expression into distinct sub-expressions
+	Testing cancelled because the build failed.
+
+** TEST FAILED **
+
+
+The following build commands failed:
+	SwiftCompile normal arm64 Compiling\ AShareDataService.swift,\ AppViewModel.swift,\ AxbladeApp.swift,\ Backtester.swift,\ BrandMark.swift,\ CashFlowAudit.swift,\ CashFlowAuditView.swift,\ ChartViews.swift,\ DragonTigerAnalytics.swift,\ DragonTigerTopologyView.swift,\ DragonTigerWatchView.swift,\ FactorMiner.swift,\ FinancialCharts.swift,\ FinancialHealth.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/Fuyao/AShareDataService.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/ViewModels/AppViewModel.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/App/AxbladeApp.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/Quant/Backtester.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Views/BrandMark.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/Analytics/CashFlowAudit.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Views/Modules/CashFlowAuditView.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Views/Modules/ChartViews.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/Analytics/DragonTigerAnalytics.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Views/Modules/DragonTigerTopologyView.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Views/Modules/DragonTigerWatchView.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/Quant/FactorMiner.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Views/Modules/FinancialCharts.swift /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/Analytics/FinancialHealth.swift (in target 'Axblade' from project 'Axblade')
+	SwiftCompile normal arm64 /Users/runner/work/China-Stocks-AI-Agent/China-Stocks-AI-Agent/Axblade/Services/Analytics/FinancialHealth.swift (in target 'Axblade' from project 'Axblade')
+	Testing project Axblade with scheme Axblade
+(3 failures)
