@@ -43,6 +43,13 @@ protocol AShareDataProvider: Sendable {
     func dragonTiger(board: DragonTigerBoard, date: String?) async throws -> DragonTigerData
     func auctionBenchmark(date: String?) async throws -> [AuctionBenchmarkItem]
     func marketDumpLink(kind: MarketDumpKind) async throws -> MarketDumpLink
+
+    // 财务报表:全部是**单只股票**请求(thscode 不接受逗号),最近 N 期模式,limit ∈ [1, 20]。
+    func incomeStatements(thscode: String, period: FinancialPeriod, limit: Int) async throws -> [IncomeStatement]
+    func balanceSheets(thscode: String, period: FinancialPeriod, limit: Int) async throws -> [BalanceSheet]
+    func cashFlowStatements(thscode: String, period: FinancialPeriod, limit: Int) async throws -> [CashFlowStatement]
+    /// `report` 形如 `2026-2`(1 一季报 / 2 中报 / 3 三季报 / 4 年报)。
+    func financialIndicators(thscode: String, report: String) async throws -> FinancialIndicatorsData
 }
 
 /// fuyao REST 实现。
@@ -217,6 +224,35 @@ struct FuyaoDataService: AShareDataProvider {
 
     func marketDumpLink(kind: MarketDumpKind) async throws -> MarketDumpLink {
         try await client.get("/api/dump/market-dumps/\(kind.rawValue)/download-url", as: MarketDumpLink.self)
+    }
+
+    // MARK: 财务报表(单只)
+
+    private func statementQuery(_ thscode: String, _ period: FinancialPeriod, _ limit: Int) -> [String: String] {
+        ["thscode": AShareSymbol.normalize(thscode), "period": period.rawValue, "limit": String(min(max(limit, 1), 20))]
+    }
+
+    func incomeStatements(thscode: String, period: FinancialPeriod, limit: Int) async throws -> [IncomeStatement] {
+        try await client.get("/api/a-share/financials/income-statements", query: statementQuery(thscode, period, limit), as: FuyaoList<IncomeStatement>.self)
+            .item.sorted { $0.period_end_ms < $1.period_end_ms }
+    }
+
+    func balanceSheets(thscode: String, period: FinancialPeriod, limit: Int) async throws -> [BalanceSheet] {
+        try await client.get("/api/a-share/financials/balance-sheets", query: statementQuery(thscode, period, limit), as: FuyaoList<BalanceSheet>.self)
+            .item.sorted { $0.period_end_ms < $1.period_end_ms }
+    }
+
+    func cashFlowStatements(thscode: String, period: FinancialPeriod, limit: Int) async throws -> [CashFlowStatement] {
+        try await client.get("/api/a-share/financials/cash-flow-statements", query: statementQuery(thscode, period, limit), as: FuyaoList<CashFlowStatement>.self)
+            .item.sorted { $0.period_end_ms < $1.period_end_ms }
+    }
+
+    func financialIndicators(thscode: String, report: String) async throws -> FinancialIndicatorsData {
+        try await client.get(
+            "/api/a-share/financials/indicators",
+            query: ["thscode": AShareSymbol.normalize(thscode), "report": report],
+            as: FinancialIndicatorsData.self
+        )
     }
 }
 

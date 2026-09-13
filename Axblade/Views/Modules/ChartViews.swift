@@ -119,6 +119,76 @@ struct LineSeries: View {
     }
 }
 
+/// 带悬停详情的折线(排名走势等):悬停出竖线 + 提示框,`reversed` 时 1 在最上。
+struct HoverLineSeries: View {
+    let points: [LineSeries.Point]
+    var color: Color = Theme.accent
+    var height: CGFloat = 120
+    var yLabel: (Double) -> String = { NumberFormat.number($0) }
+    var reversed = false
+    @State private var hovered: String?
+
+    private var xTicks: [String] {
+        guard points.count > 5 else { return points.map(\.x) }
+        let step = max(1, points.count / 4)
+        var ticks = stride(from: 0, to: points.count, by: step).map { points[$0].x }
+        if let last = points.last?.x, ticks.last != last { ticks.append(last) }
+        return ticks
+    }
+
+    var body: some View {
+        Chart {
+            ForEach(points) { point in
+                LineMark(x: .value("x", point.x), y: .value("y", point.y))
+                    .foregroundStyle(color)
+                    .interpolationMethod(.monotone)
+                PointMark(x: .value("x", point.x), y: .value("y", point.y))
+                    .foregroundStyle(color)
+                    .symbolSize(point.x == hovered ? 60 : 14)
+            }
+            if let hovered, let point = points.first(where: { $0.x == hovered }) {
+                RuleMark(x: .value("x", point.x))
+                    .foregroundStyle(Theme.border)
+                    .annotation(position: .top, alignment: .center, spacing: 2, overflowResolution: .init(x: .fit(to: .chart), y: .disabled)) {
+                        ChartTooltip(title: point.x, lines: [yLabel(point.y)])
+                    }
+            }
+        }
+        .chartXScale(domain: points.map(\.x))
+        .chartYScale(domain: .automatic(includesZero: false, reversed: reversed))
+        .chartXAxis {
+            AxisMarks(values: xTicks) { value in
+                AxisValueLabel {
+                    if let text = value.as(String.self) { Text(String(text.suffix(5))).font(.caption2) }
+                }
+                .foregroundStyle(Theme.muted)
+            }
+        }
+        .chartYAxis {
+            AxisMarks(position: .trailing, values: .automatic(desiredCount: 4)) { value in
+                AxisGridLine().foregroundStyle(Theme.border)
+                AxisValueLabel {
+                    if let y = value.as(Double.self) { Text(yLabel(y)).font(.caption2) }
+                }
+                .foregroundStyle(Theme.muted)
+            }
+        }
+        .chartOverlay { proxy in
+            GeometryReader { geo in
+                let origin = proxy.plotFrame.map { geo[$0].origin } ?? .zero
+                Rectangle().fill(Color.clear).contentShape(Rectangle())
+                    .onContinuousHover { phase in
+                        switch phase {
+                        case .active(let location): hovered = proxy.value(atX: location.x - origin.x)
+                        case .ended: hovered = nil
+                        }
+                    }
+            }
+        }
+        .frame(height: height)
+    }
+}
+
 /// 热力格:按值在红(正)/ 绿(负)之间着色。
 struct HeatCell: View {
     let value: Double

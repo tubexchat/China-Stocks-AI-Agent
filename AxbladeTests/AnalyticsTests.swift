@@ -189,4 +189,194 @@ final class AnalyticsTests: XCTestCase {
         store.clear()
         XCTAssertTrue(store.loadSeries(tag: "industry").isEmpty)
     }
+
+    // MARK: - 行业强度作战矩阵
+
+    private func industrySeries(scale: Double, turnoverBoost: Double = 1) -> [PriceBar] {
+        Fixtures.indexBars.enumerated().map { index, bar in
+            var copy = bar
+            copy.close_price = bar.close * pow(scale, Double(index) / Double(Fixtures.indexBars.count))
+            if index >= Fixtures.indexBars.count - 5 { copy.turnover = (bar.turnover ?? 0) * turnoverBoost }
+            return copy
+        }
+    }
+
+    func testIndustryStrengthRanksRelativeToBenchmark() throws {
+        let benchmark = SectorSeries(thscode: "000300.SH", name: "沪深300", bars: Fixtures.indexBars)
+        let sectors = [
+            SectorSeries(thscode: "A.TI", name: "强势", bars: industrySeries(scale: 1.4, turnoverBoost: 2)),
+            SectorSeries(thscode: "B.TI", name: "跟随", bars: Fixtures.indexBars),
+            SectorSeries(thscode: "C.TI", name: "弱势", bars: industrySeries(scale: 0.7))
+        ]
+        let report = try XCTUnwrap(IndustryStrengthAnalyzer.run(benchmark: benchmark, sectors: sectors))
+        XCTAssertEqual(report.rows.map(\.name), ["强势", "跟随", "弱势"])
+        XCTAssertEqual(report.rows[0].rank, 1)
+        XCTAssertEqual(report.rows[2].rank, 3)
+        let follower = report.rows[1]
+        XCTAssertEqual(follower.rs20!, 0, accuracy: 1e-9, "与基准同走势 → 相对强度为 0")
+        XCTAssertEqual(follower.ret20!, report.benchmarkRet20!, accuracy: 1e-12)
+        XCTAssertGreaterThan(report.rows[0].rs20!, 0)
+        XCTAssertLessThan(report.rows[2].rs20!, 0)
+        XCTAssertGreaterThan(report.rows[0].turnoverPulse!, follower.turnoverPulse!)
+        XCTAssertEqual(follower.turnoverPulse!, IndustryStrengthAnalyzer.turnoverPulse(Fixtures.indexBars.map { $0.turnover ?? 0 })!, accuracy: 1e-12)
+        XCTAssertEqual(report.rows[0].score, 100)
+        XCTAssertEqual(report.rows[2].score, 0)
+        XCTAssertEqual(report.breadth.total, 3)
+        XCTAssertEqual(report.breadth.outperform20, 1)
+        XCTAssertEqual(report.recentDates.count, 20)
+        XCTAssertEqual(report.rows[0].recentReturns.count, 20)
+        XCTAssertEqual(report.dataDate, ShanghaiDate.string(Fixtures.indexBars.last!.date))
+        XCTAssertNotNil(report.rows[0].previousRank)
+        XCTAssertTrue(report.promptText.contains("最强行业"))
+        XCTAssertNil(IndustryStrengthAnalyzer.run(benchmark: nil, sectors: []))
+    }
+
+    func testIndustryStrengthWithoutBenchmarkFallsBackToAbsolute() throws {
+        let sectors = [SectorSeries(thscode: "A.TI", name: "A", bars: Fixtures.indexBars)]
+        let report = try XCTUnwrap(IndustryStrengthAnalyzer.run(benchmark: nil, sectors: sectors))
+        XCTAssertNil(report.benchmarkName)
+        XCTAssertEqual(report.rows[0].rs20, report.rows[0].ret20)
+        XCTAssertEqual(IndustryStrengthAnalyzer.percentile(5, in: [1, 5, 9]), 50)
+        XCTAssertNil(IndustryStrengthAnalyzer.turnoverPulse(Array(repeating: 0, count: 30)))
+        XCTAssertNil(IndustryStrengthAnalyzer.trailingReturn([1, 2, 3], 5))
+    }
+
+    func testConstituentEvidenceUsesEqualWeightProxy() {
+        let members = [
+            TickerSearchItem(thscode: "600519.SH", ticker: "600519", name: "贵州茅台", exchange: "SH", asset_type: "a-share", currency: "CNY"),
+            TickerSearchItem(thscode: "000001.SZ", ticker: "000001", name: "平安银行", exchange: "SZ", asset_type: "a-share", currency: "CNY"),
+            TickerSearchItem(thscode: "999999.SZ", ticker: "999999", name: "无报价", exchange: "SZ", asset_type: "a-share", currency: "CNY")
+        ]
+        let index = PriceSnapshotItem(thscode: "881101.TI", price_change_ratio_pct: 1.5)
+        let evidence = IndustryConstituentAnalyzer.run(thscode: "881101.TI", name: "测试行业", constituents: members, snapshot: Fixtures.snapshot, indexSnapshot: index)
+        XCTAssertEqual(evidence.total, 3)
+        XCTAssertEqual(evidence.priced, 2, "没有报价的成分不计入涨跌家数")
+        XCTAssertEqual(evidence.up, 1)
+        XCTAssertEqual(evidence.down, 1)
+        XCTAssertEqual(evidence.equalWeightChange!, (-0.509875 + 0.683761) / 2, accuracy: 1e-9)
+        XCTAssertEqual(evidence.indexChange, 1.5)
+        XCTAssertEqual(evidence.weightGap!, 1.5 - evidence.equalWeightChange!, accuracy: 1e-9)
+        XCTAssertNotNil(evidence.dispersion)
+        XCTAssertEqual(evidence.topGainers.first?.name, "平安银行")
+        XCTAssertEqual(evidence.topTurnover.first?.name, "贵州茅台")
+        XCTAssertEqual(evidence.top5TurnoverShare!, 1, accuracy: 1e-9)
+        XCTAssertTrue(evidence.promptText.contains("不是指数贡献"))
+    }
+
+    // MARK: - 现金流质量稽核台
+
+    func testCashFlowMetricsMatchDefinitionsAndLeaveBlanksOnZero() {
+        let income = Fixtures.incomeAnnual.last!, balance = Fixtures.balanceAnnual.last!, cash = Fixtures.cashFlowAnnual.last!
+        let m = CashFlowMetrics.compute(income: income, balance: balance, cashFlow: cash)
+        XCTAssertEqual(m.cashConversion!, 3_774_236_497.7 / 3_205_102_614.07, accuracy: 1e-12)
+        XCTAssertEqual(m.fcfMargin!, (3_774_236_497.7 - 142_421_212.4) / 6_028_985_966.48, accuracy: 1e-12)
+        XCTAssertEqual(m.accrualRatio!, (3_205_102_614.07 - 3_774_236_497.7) / 15_832_994_333.52, accuracy: 1e-12)
+        XCTAssertEqual(m.receivablePressure!, 20_639_274.98 / 6_028_985_966.48, accuracy: 1e-12)
+        XCTAssertEqual(m.netCashRatio!, (14_036_333_777.03 - 6_341_039_595.3) / 15_832_994_333.52, accuracy: 1e-12)
+
+        var zeroProfit = income
+        zeroProfit.net_profit = 0
+        XCTAssertNil(CashFlowMetrics.compute(income: zeroProfit, balance: balance, cashFlow: cash).cashConversion, "分母为 0 留空")
+        var noCapex = cash
+        noCapex.pay_fixed_assets_etc_cash = nil
+        XCTAssertNil(CashFlowMetrics.compute(income: income, balance: balance, cashFlow: noCapex).fcfMargin, "任一侧缺失留空")
+        XCTAssertNil(CashFlowMetrics.compute(income: nil, balance: nil, cashFlow: nil).netCashRatio)
+    }
+
+    func testCashFlowAuditAlignsPeriodsAndGatesByReportDate() {
+        let input = CashFlowAuditAnalyzer.Input(thscode: "300033.SZ", name: "同花顺", income: Fixtures.incomeAnnual, balance: Fixtures.balanceAnnual, cashFlow: Fixtures.cashFlowAnnual)
+        let report = CashFlowAuditAnalyzer.run(asOf: Date(timeIntervalSince1970: 1_800_000_000), inputs: [input])
+        let company = report.companies[0]
+        XCTAssertEqual(company.periods.count, 5)
+        XCTAssertEqual(company.periods.map(\.label), ["2021 FY", "2022 FY", "2023 FY", "2024 FY", "2025 FY"])
+        XCTAssertTrue(company.periods.allSatisfy { $0.income != nil && $0.balance != nil && $0.cashFlow != nil })
+        XCTAssertEqual(company.yearsComparable, 5)
+        XCTAssertEqual(company.yearsCashCovered, 5, "同花顺 2021–2025 每年经营现金流都高于净利润")
+        XCTAssertEqual(company.missingFields, 0)
+        XCTAssertEqual(company.expectedFields, 40)
+        XCTAssertEqual(report.fields.count, 8)
+        XCTAssertTrue(report.fields.allSatisfy { $0.present == 5 && $0.expected == 5 })
+        XCTAssertEqual(report.overallCompleteness, 1)
+        XCTAssertNotNil(company.fcfTotal)
+
+        // 披露时点回拨到 2026-01-01:2025 年报(披露 2026-03-10)和 2024 年报(重述披露日同为 2026-03-10)都还看不到。
+        let earlier = CashFlowAuditAnalyzer.run(asOf: ShanghaiDate.date("2026-01-01")!, inputs: [input]).companies[0]
+        XCTAssertEqual(earlier.periods.last?.label, "2023 FY")
+        XCTAssertEqual(earlier.periods.count, 3)
+
+        let failed = CashFlowAuditAnalyzer.run(asOf: Date(), inputs: [.init(thscode: "000001.SZ", name: "x", error: "boom")])
+        XCTAssertEqual(failed.failed.count, 1)
+        XCTAssertTrue(failed.loaded.isEmpty)
+        XCTAssertTrue(failed.promptText.contains("取数失败"))
+    }
+
+    func testCashFlowAuditSortingPutsBlanksLast() {
+        var partial = Fixtures.incomeAnnual
+        partial[4].net_profit = nil
+        let inputs = [
+            CashFlowAuditAnalyzer.Input(thscode: "A.SZ", name: "有值", income: Fixtures.incomeAnnual, balance: Fixtures.balanceAnnual, cashFlow: Fixtures.cashFlowAnnual),
+            CashFlowAuditAnalyzer.Input(thscode: "B.SZ", name: "缺净利", income: partial, balance: Fixtures.balanceAnnual, cashFlow: Fixtures.cashFlowAnnual)
+        ]
+        let report = CashFlowAuditAnalyzer.run(asOf: Date(timeIntervalSince1970: 1_800_000_000), inputs: inputs)
+        XCTAssertNil(report.companies[1].latest?.metrics.cashConversion)
+        XCTAssertEqual(report.sorted(by: .cashConversion).map(\.name), ["有值", "缺净利"])
+        XCTAssertEqual(report.companies[1].missingFields, 1)
+        XCTAssertEqual(report.fields.first { $0.field == "net_profit" }?.present, 9)
+        XCTAssertLessThan(report.overallCompleteness, 1)
+    }
+
+    // MARK: - 单股财务体检
+
+    func testFinancialHealthAlignsQuartersAndDerivesSingleQuarter() throws {
+        let report = FinancialHealthAnalyzer.run(
+            thscode: "300033.SZ", name: "同花顺",
+            income: Fixtures.incomeQuarterly, balance: Fixtures.balanceQuarterly, cashFlow: Fixtures.cashFlowQuarterly,
+            indicators: Fixtures.indicators, indicatorReport: "2026-2"
+        )
+        XCTAssertEqual(report.periods.count, 8)
+        XCTAssertEqual(report.periods.map(\.label), ["2024 Q3", "2024 Q4", "2025 Q1", "2025 Q2", "2025 Q3", "2025 Q4", "2026 Q1", "2026 Q2"])
+        XCTAssertEqual(report.completePeriods, 8)
+        let latest = try XCTUnwrap(report.latest)
+        XCTAssertEqual(latest.revenue, 2_645_653_616.14)
+        // 单季 = Q2 累计 − Q1 累计
+        XCTAssertEqual(latest.revenueQ!, 2_645_653_616.14 - 1_053_494_727.58, accuracy: 1e-6)
+        XCTAssertEqual(latest.netProfitQ!, 952_339_823.8 - 255_922_385.71, accuracy: 1e-6)
+        // Q1 单季 = 累计本身
+        let q1 = report.periods[6]
+        XCTAssertEqual(q1.revenueQ, q1.revenue)
+        // 2024 Q3 的上一期(2024 Q2)不在 8 期里 → 单季留空
+        XCTAssertNil(report.periods[0].revenueQ)
+        // 同比:2026 Q2 vs 2025 Q2
+        XCTAssertEqual(latest.revenueYoY!, (2_645_653_616.14 - 1_779_405_283.66) / 1_779_405_283.66, accuracy: 1e-9)
+        XCTAssertNil(report.periods[0].revenueYoY, "8 期里没有 2023 Q3")
+        XCTAssertEqual(report.yearAgo?.label, "2025 Q2")
+        XCTAssertEqual(report.previous?.label, "2026 Q1")
+        XCTAssertNotNil(latest.grossMargin)
+        XCTAssertNotNil(latest.debtRatio)
+        XCTAssertEqual(latest.fcf!, 2_219_388_283.46 - 89_055_588.26, accuracy: 1e-6)
+        XCTAssertEqual(report.currency, "CNY")
+        XCTAssertEqual(report.indicatorReport, "2026-2")
+        XCTAssertTrue(report.promptText.contains("累计"))
+        XCTAssertTrue(report.promptText.contains("不补零"))
+    }
+
+    func testFinancialHealthKeepsNullsAndHandlesMissingStatements() {
+        var income = Fixtures.incomeQuarterly
+        income[7].operating_income = nil
+        let report = FinancialHealthAnalyzer.run(
+            thscode: "300033.SZ", name: "同花顺", income: income, balance: [], cashFlow: Array(Fixtures.cashFlowQuarterly.prefix(7)),
+            indicators: nil, indicatorReport: nil
+        )
+        XCTAssertNil(report.latest?.revenue)
+        XCTAssertNil(report.latest?.revenueQ)
+        XCTAssertNil(report.latest?.revenueYoY)
+        XCTAssertNil(report.latest?.grossMargin)
+        XCTAssertNil(report.latest?.debtRatio, "没有资产负债表 → 杠杆留空")
+        XCTAssertNil(report.latest?.ocf, "最新期现金流量表缺失")
+        XCTAssertEqual(report.completePeriods, 0)
+        XCTAssertNil(FinancialHealthAnalyzer.yoy(current: 1, previous: 0))
+        XCTAssertNil(FinancialHealthAnalyzer.singleQuarter(current: 10, previousCumulative: nil, quarter: 3))
+        XCTAssertEqual(FinancialHealthAnalyzer.singleQuarter(current: 10, previousCumulative: nil, quarter: 1), 10)
+        XCTAssertEqual(FinancialHealthAnalyzer.yoy(current: 90, previous: -100)!, 1.9, accuracy: 1e-12)
+    }
 }

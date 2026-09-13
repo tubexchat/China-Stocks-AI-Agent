@@ -31,6 +31,12 @@ struct ModulesView: View {
             MarketTrendView(viewModel: viewModel, model: viewModel.marketTrend)
         case .dragonTigerWatch:
             DragonTigerWatchView(viewModel: viewModel, model: viewModel.dragonTigerWatch)
+        case .industryMatrix:
+            IndustryMatrixView(viewModel: viewModel, model: viewModel.industryMatrix)
+        case .cashFlowAudit:
+            CashFlowAuditView(viewModel: viewModel, model: viewModel.cashFlowAudit)
+        case .financialHealth:
+            FinancialHealthView(viewModel: viewModel, model: viewModel.financialHealth)
         }
     }
 
@@ -314,4 +320,66 @@ struct Chip: View {
             .background(color)
             .clipShape(RoundedRectangle(cornerRadius: 5))
     }
+}
+
+/// 数据说明卡:数据时间 / 真实模式 / 来源端点 / 计算口径 / 非投资建议。财务与行业模块页脚必带。
+struct ProvenanceCard: View {
+    let dataTime: String
+    let endpoints: [String]
+    let methodology: String
+    @Environment(\.l10n) private var l10n
+
+    var body: some View {
+        SectionCard(title: l10n.dataProvenance) {
+            Grid(alignment: .topLeading, horizontalSpacing: 12, verticalSpacing: 6) {
+                GridRow {
+                    Text(l10n.dataTime).font(.caption).foregroundStyle(Theme.muted)
+                    Text(dataTime).font(.caption.monospacedDigit()).foregroundStyle(Theme.text)
+                }
+                GridRow {
+                    Text(l10n.dataMode).font(.caption).foregroundStyle(Theme.muted)
+                    Text(l10n.dataModeReal).font(.caption).foregroundStyle(Theme.text).fixedSize(horizontal: false, vertical: true)
+                }
+                GridRow {
+                    Text(l10n.sourceEndpoints).font(.caption).foregroundStyle(Theme.muted)
+                    VStack(alignment: .leading, spacing: 2) {
+                        ForEach(endpoints, id: \.self) { endpoint in
+                            Text(endpoint).font(.system(size: 10, design: .monospaced)).foregroundStyle(Theme.text).textSelection(.enabled)
+                        }
+                    }
+                }
+                GridRow {
+                    Text(l10n.methodology).font(.caption).foregroundStyle(Theme.muted)
+                    Text(methodology).font(.caption).foregroundStyle(Theme.text).fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            Text(l10n.notAdvice)
+                .font(.caption.weight(.medium))
+                .foregroundStyle(Theme.accentStrong)
+                .padding(.top, 4)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+}
+
+/// 「值 / 缺失」文本:nil 显示为「—」,不补零。
+struct ValueText: View {
+    let text: String?
+    var color: Color = Theme.text
+
+    var body: some View {
+        Text(text ?? "—")
+            .monospacedDigit()
+            .lineLimit(1)
+            .foregroundStyle(text == nil ? Theme.disabled : color)
+    }
+}
+
+/// 常用格式:比率 → 百分数 / 倍数,nil 透传。
+enum RatioFormat {
+    static func percent(_ value: Double?) -> String? { value.map { RiskReport.percent($0) } }
+    static func times(_ value: Double?) -> String? { value.map { NumberFormat.number($0) + "×" } }
+    static func yuan(_ value: Double?) -> String? { value.map(MoneyFormat.yuan) }
+    static func number(_ value: Double?) -> String? { value.map(NumberFormat.number) }
+    static func day(_ ms: Int64?) -> String? { ms.map { ShanghaiDate.string(Date(timeIntervalSince1970: Double($0) / 1000)) } }
 }

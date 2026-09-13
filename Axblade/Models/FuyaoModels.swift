@@ -454,3 +454,175 @@ struct MarketDumpLink: Decodable, Equatable, Sendable {
     var presigned_url_expires_at: String?
     var expires_in_seconds: Int?
 }
+
+// MARK: - 财务报表(单只股票、多期)
+
+enum FinancialPeriod: String, CaseIterable, Sendable, Identifiable {
+    /// 仅 Q4 报告期(年报)。
+    case annual
+    /// 每个季度末;利润表 / 现金流量表为**年初至今累计值**,资产负债表为期末时点值。
+    case quarterly
+    var id: String { rawValue }
+}
+
+/// 三张报表共有的元数据。
+protocol FinancialStatement: Decodable, Equatable, Sendable, Identifiable {
+    var thscode: String { get }
+    var fiscal_year: Int? { get }
+    var fiscal_period: String? { get }
+    var report_date_ms: Int64? { get }
+    var period_end_ms: Int64 { get }
+    var currency: String? { get }
+}
+
+extension FinancialStatement {
+    var id: Int64 { period_end_ms }
+    var periodEnd: Date { Date(timeIntervalSince1970: Double(period_end_ms) / 1000) }
+    var reportDate: Date? { report_date_ms.map { Date(timeIntervalSince1970: Double($0) / 1000) } }
+    /// `2025 FY` / `2026 Q2`。
+    var periodLabel: String {
+        guard let fiscal_year, let fiscal_period else { return ShanghaiDate.string(periodEnd) }
+        return "\(fiscal_year) \(fiscal_period)"
+    }
+    /// 财务指标接口的 `report` 参数:`yyyy-1..4`。
+    var indicatorReport: String? {
+        guard let fiscal_year, let fiscal_period else { return nil }
+        switch fiscal_period.uppercased() {
+        case "Q1": return "\(fiscal_year)-1"
+        case "Q2": return "\(fiscal_year)-2"
+        case "Q3": return "\(fiscal_year)-3"
+        case "Q4", "FY": return "\(fiscal_year)-4"
+        default: return nil
+        }
+    }
+    /// 季度序号 1–4(FY = 4)。
+    var quarterIndex: Int? {
+        guard let fiscal_period else { return nil }
+        switch fiscal_period.uppercased() {
+        case "Q1": return 1
+        case "Q2": return 2
+        case "Q3": return 3
+        case "Q4", "FY": return 4
+        default: return nil
+        }
+    }
+}
+
+struct IncomeStatement: FinancialStatement {
+    var thscode: String
+    var ticker: String?
+    var period: String?
+    var fiscal_year: Int?
+    var fiscal_period: String?
+    var report_date_ms: Int64?
+    var period_end_ms: Int64
+    var currency: String?
+    var operating_income: Double?
+    var operating_costs: Double?
+    var operating_expenses: Double?
+    var sales_fee: Double?
+    var manage_fee: Double?
+    var research_and_development_expenses: Double?
+    var operating_profit: Double?
+    var interest_expenses: Double?
+    var profit_total: Double?
+    var income_tax_expense: Double?
+    var net_profit: Double?
+    var parent_holder_net_profit: Double?
+    var basic_eps: Double?
+}
+
+struct BalanceSheet: FinancialStatement {
+    var thscode: String
+    var ticker: String?
+    var period: String?
+    var fiscal_year: Int?
+    var fiscal_period: String?
+    var report_date_ms: Int64?
+    var period_end_ms: Int64
+    var currency: String?
+    var assets_total: Double?
+    var total_current_assets: Double?
+    var non_current_nets_total: Double?
+    var cash: Double?
+    var accounts_receivable: Double?
+    var total_debt: Double?
+    var holder_equity_total: Double?
+}
+
+struct CashFlowStatement: FinancialStatement {
+    var thscode: String
+    var ticker: String?
+    var period: String?
+    var fiscal_year: Int?
+    var fiscal_period: String?
+    var report_date_ms: Int64?
+    var period_end_ms: Int64
+    var currency: String?
+    var act_cash_flow_net: Double?
+    var invest_cash_flow_net: Double?
+    var financing_cash_flow_net: Double?
+    var pay_fixed_assets_etc_cash: Double?
+    var pay_dividends_profits_interest_cash: Double?
+    var cash_equivalents_net_addition: Double?
+}
+
+/// 财务指标:五类能力块,值为上游原始字符串(百分比类按百分数表达),缺失为 nil。
+struct FinancialIndicator: Decodable, Equatable, Sendable, Identifiable {
+    var index_id: String
+    var value: String?
+
+    var id: String { index_id }
+    var doubleValue: Double? { value.flatMap { Double($0.trimmingCharacters(in: .whitespaces)) } }
+}
+
+struct FinancialAbility: Decodable, Equatable, Sendable, Identifiable {
+    var ability: String
+    var indicators: [FinancialIndicator]
+
+    private enum CodingKeys: String, CodingKey { case ability, indicators }
+
+    init(ability: String, indicators: [FinancialIndicator]) {
+        self.ability = ability
+        self.indicators = indicators
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        ability = try container.decodeIfPresent(String.self, forKey: .ability) ?? ""
+        indicators = try container.decodeIfPresent([FinancialIndicator].self, forKey: .indicators) ?? []
+    }
+
+    var id: String { ability }
+}
+
+struct FinancialIndicatorsData: Decodable, Equatable, Sendable {
+    var thscode: String?
+    var report: String?
+    var abilities: [FinancialAbility]
+
+    private enum CodingKeys: String, CodingKey { case thscode, report, abilities }
+
+    init(thscode: String? = nil, report: String? = nil, abilities: [FinancialAbility] = []) {
+        self.thscode = thscode
+        self.report = report
+        self.abilities = abilities
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        thscode = try container.decodeIfPresent(String.self, forKey: .thscode)
+        report = try container.decodeIfPresent(String.self, forKey: .report)
+        abilities = try container.decodeIfPresent([FinancialAbility].self, forKey: .abilities) ?? []
+    }
+
+    /// 按 `index_id` 取值(跨能力块)。
+    func value(_ indexID: String) -> Double? {
+        for ability in abilities {
+            if let hit = ability.indicators.first(where: { $0.index_id == indexID }) { return hit.doubleValue }
+        }
+        return nil
+    }
+
+    var isEmpty: Bool { abilities.allSatisfy { $0.indicators.isEmpty } }
+}

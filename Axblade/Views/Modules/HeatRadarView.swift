@@ -54,6 +54,11 @@ struct HeatRadarView: View {
                     }
                     anomaliesCard(report)
                     ReportBar(report: report.promptText)
+                    ProvenanceCard(
+                        dataTime: "\(report.period == .day ? text.periodDay : text.periodHour) · " + String(format: text.generatedAtFormat, Self.timeFormatter.string(from: report.fetchedAt)),
+                        endpoints: Self.endpoints,
+                        methodology: text.heatRadarMethod
+                    )
                 }
                 Spacer(minLength: 20)
             }
@@ -63,6 +68,14 @@ struct HeatRadarView: View {
         }
         .onAppear { if model.report == nil && !model.isLoading { model.load() } }
     }
+
+    static let timeFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = ShanghaiDate.timeZone
+        formatter.dateFormat = "yyyy-MM-dd HH:mm"
+        return formatter
+    }()
 
     private func resonanceCard(_ report: HeatRadarReport) -> some View {
         SectionCard(title: text.resonance, subtitle: text.resonanceHint) {
@@ -84,16 +97,34 @@ struct HeatRadarView: View {
     }
 
     private var trendCard: some View {
-        SectionCard(title: text.rankTrend, subtitle: model.selectedCode.flatMap { code in model.report?.points.first { $0.id == code }?.name }) {
+        SectionCard(title: String(format: text.rankRangeDaysFormat, model.trendDays) + " · " + text.rankTrend, subtitle: model.selectedCode.flatMap { code in model.report?.points.first { $0.id == code }?.name }) {
+            Picker(text.rankRange, selection: Binding(get: { model.trendDays }, set: { model.setTrendDays($0) })) {
+                ForEach(HeatRadarModel.trendDayOptions, id: \.self) { days in
+                    Text(String(format: text.rankRangeDaysFormat, days)).tag(days)
+                }
+            }
+            .pickerStyle(.segmented)
+            .controlSize(.small)
             if model.isLoadingTrend {
                 ProgressView().controlSize(.small)
             } else if model.rankTrend.isEmpty {
                 Text(text.noData).font(.caption).foregroundStyle(Theme.muted)
             } else {
-                LineSeries(points: model.rankTrend.map { .init(x: $0.date, y: Double($0.rank)) }, color: Theme.accent, height: 110, yLabel: { "#\(Int($0))" }, reversed: true)
+                HoverLineSeries(points: model.rankTrend.map { .init(x: $0.date, y: Double($0.rank)) }, color: Theme.accent, height: 130, yLabel: { "#\(Int($0))" }, reversed: true)
+                if let best = model.rankTrend.min(by: { $0.rank < $1.rank }), let last = model.rankTrend.last {
+                    Text("\(text.rank) #\(last.rank) · \(text.rankChange) \(best.date) #\(best.rank)")
+                        .font(.caption2.monospacedDigit()).foregroundStyle(Theme.muted)
+                }
             }
         }
     }
+
+    static let endpoints = [
+        "GET /api/a-share/special-data/hot-stock-list?period=day|hour",
+        "GET /api/a-share/special-data/skyrocket-list?period=day|hour",
+        "GET /api/a-share/special-data/hot-stock-rank-trend?thscode=…&start_date=…&end_date=…(单只,自然日)",
+        "GET /api/a-share/special-data/anomaly-analysis-list"
+    ]
 
     private func row(_ point: HeatRadarReport.RadarPoint, rank: Int?) -> some View {
         Button { model.select(model.selectedCode == point.id ? nil : point.id) } label: {

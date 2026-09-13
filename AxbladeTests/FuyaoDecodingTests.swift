@@ -89,6 +89,64 @@ final class FuyaoDecodingTests: XCTestCase {
         XCTAssertEqual(Fixtures.industry.first?.name, "种植业与林业")
     }
 
+    func testFinancialStatementFixtures() {
+        let income = Fixtures.incomeAnnual
+        XCTAssertEqual(income.count, 5)
+        XCTAssertEqual(income.first?.fiscal_year, 2021)
+        XCTAssertEqual(income.last?.periodLabel, "2025 FY")
+        XCTAssertEqual(income.last?.operating_income, 6_028_985_966.48)
+        XCTAssertNil(income.last?.interest_expenses, "null 保持缺失")
+        XCTAssertEqual(income.last?.indicatorReport, "2025-4")
+
+        let quarterly = Fixtures.incomeQuarterly
+        XCTAssertEqual(quarterly.count, 8)
+        XCTAssertEqual(quarterly.last?.periodLabel, "2026 Q2")
+        XCTAssertEqual(quarterly.last?.indicatorReport, "2026-2")
+        XCTAssertEqual(quarterly.last?.quarterIndex, 2)
+        XCTAssertGreaterThan(quarterly.last!.operating_income!, quarterly[quarterly.count - 2].operating_income!, "季度值是年初至今累计")
+
+        let balance = Fixtures.balanceAnnual
+        XCTAssertEqual(balance.last?.cash, 14_036_333_777.03)
+        XCTAssertEqual(balance.last?.total_debt, 6_341_039_595.3)
+        let cash = Fixtures.cashFlowAnnual
+        XCTAssertEqual(cash.last?.act_cash_flow_net, 3_774_236_497.7)
+        XCTAssertEqual(cash.last?.pay_fixed_assets_etc_cash, 142_421_212.4)
+        XCTAssertEqual(Set(income.map(\.period_end_ms)), Set(cash.map(\.period_end_ms)), "三表报告期一致")
+    }
+
+    func testFinancialIndicatorsFixture() {
+        let data = Fixtures.indicators
+        XCTAssertEqual(data.report, "2026-2")
+        XCTAssertEqual(data.abilities.map(\.ability), ["growth", "profitability", "solvency", "operation", "cash-flow"])
+        XCTAssertEqual(data.value("sale_gross_margin")!, 88.971, accuracy: 1e-9)
+        XCTAssertNil(data.value("earned_interest_multiple"), "上游 null 不补零")
+        XCTAssertNil(data.value("nope"))
+        XCTAssertFalse(data.isEmpty)
+        XCTAssertEqual(FinancialIndicatorCatalog.name("sale_gross_margin"), "销售毛利率")
+        XCTAssertTrue(FinancialIndicatorCatalog.isPercent("sale_gross_margin"))
+        XCTAssertFalse(FinancialIndicatorCatalog.isPercent("current_ratio"))
+        XCTAssertEqual(FinancialIndicatorCatalog.display(FinancialIndicator(index_id: "sale_gross_margin", value: "88.9710")), "88.97%")
+        XCTAssertEqual(FinancialIndicatorCatalog.display(FinancialIndicator(index_id: "current_ratio", value: "1.9394")), "1.94")
+        XCTAssertEqual(FinancialIndicatorCatalog.display(FinancialIndicator(index_id: "current_ratio", value: nil)), "—")
+    }
+
+    func testConstituentsAndSearchFixtures() {
+        XCTAssertEqual(Fixtures.constituents.first?.name, "国投丰乐")
+        XCTAssertGreaterThan(Fixtures.constituents.count, 5)
+        let ths = Fixtures.searchTHS
+        XCTAssertEqual(ths.first?.thscode, "300033.SZ")
+        XCTAssertEqual(ths.filter { $0.asset_type == "a-share" }.count, 1, "「同花顺」只对应一只 A 股,其余是指数")
+    }
+
+    func testFinancialRequestsAreSingleTickerAndClamped() throws {
+        let client = FuyaoClient(keyProvider: { "sk-test" })
+        let service = FuyaoDataService(client: client)
+        _ = service
+        let request = try client.makeRequest(path: "/api/a-share/financials/income-statements", query: ["thscode": "300033.SZ", "period": "annual", "limit": "5"])
+        XCTAssertEqual(request.url?.absoluteString, "https://fuyao.aicubes.cn/api/a-share/financials/income-statements?limit=5&period=annual&thscode=300033.SZ")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "X-api-key"), "sk-test")
+    }
+
     func testRequestCarriesAPIKeyHeaderAndSortedQuery() throws {
         let client = FuyaoClient(keyProvider: { "sk-test" })
         let request = try client.makeRequest(path: "/api/a-share/prices/snapshot", query: ["thscodes": "600519.SH", "limit": "10"])

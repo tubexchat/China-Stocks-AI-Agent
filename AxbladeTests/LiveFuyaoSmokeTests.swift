@@ -85,4 +85,34 @@ final class LiveFuyaoSmokeTests: XCTestCase {
         XCTAssertEqual(viewModel.marketTrend.stockName, "贵州茅台")
         print("LIVE 个股:", viewModel.marketTrend.stockPromptText?.prefix(300) ?? "")
     }
+
+    func testFinancialModulesLive() async throws {
+        let viewModel = makeViewModel()
+        viewModel.financialHealth.query = "同花顺"
+        viewModel.financialHealth.search()
+        await viewModel.financialHealth.task?.value
+        XCTAssertNil(viewModel.financialHealth.errorText)
+        let health = try XCTUnwrap(viewModel.financialHealth.report)
+        XCTAssertEqual(health.thscode, "300033.SZ")
+        XCTAssertEqual(health.periods.count, 8)
+        print("LIVE 体检:", health.promptText.prefix(400))
+
+        viewModel.setCashFlowPool(["600519.SH", "300033.SZ", "000858.SZ"])
+        viewModel.cashFlowAudit.load()
+        await viewModel.cashFlowAudit.task?.value
+        XCTAssertNil(viewModel.cashFlowAudit.errorText)
+        let audit = try XCTUnwrap(viewModel.cashFlowAudit.report)
+        XCTAssertEqual(audit.loaded.count, 3)
+        print("LIVE 稽核:", audit.promptText.prefix(400))
+
+        viewModel.industryMatrix.refresh()
+        await viewModel.industryMatrix.task?.value
+        XCTAssertNil(viewModel.industryMatrix.errorText)
+        let matrix = try XCTUnwrap(viewModel.industryMatrix.report)
+        XCTAssertGreaterThan(matrix.rows.count, 250)
+        viewModel.industryMatrix.select(matrix.rows.first?.thscode)
+        for _ in 0..<200 where viewModel.industryMatrix.isLoadingEvidence { try await Task.sleep(for: .milliseconds(100)) }
+        XCTAssertNotNil(viewModel.industryMatrix.evidence)
+        print("LIVE 矩阵:", matrix.promptText.prefix(400))
+    }
 }

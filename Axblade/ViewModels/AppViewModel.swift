@@ -17,6 +17,9 @@ final class AppViewModel: ObservableObject {
     let heatRadar: HeatRadarModel
     let marketTrend: MarketTrendModel
     let dragonTigerWatch: DragonTigerWatchModel
+    let industryMatrix: IndustryMatrixModel
+    let cashFlowAudit: CashFlowAuditModel
+    let financialHealth: FinancialHealthModel
 
     private let store: SettingsStore
 
@@ -34,6 +37,9 @@ final class AppViewModel: ObservableObject {
         self.heatRadar = HeatRadarModel(data: data, calendar: calendar)
         self.marketTrend = MarketTrendModel(data: data, calendar: calendar, store: researchStore)
         self.dragonTigerWatch = DragonTigerWatchModel(data: data, calendar: calendar)
+        self.industryMatrix = IndustryMatrixModel(data: data, calendar: calendar, store: researchStore)
+        self.cashFlowAudit = CashFlowAuditModel(data: data, calendar: calendar)
+        self.financialHealth = FinancialHealthModel(data: data, calendar: calendar)
         let loadedSettings = store.loadSettings()
         self.settings = loadedSettings
         self.selectedModule = loadedSettings.lastModule
@@ -41,6 +47,7 @@ final class AppViewModel: ObservableObject {
         for module in modules { module.describe = { [weak self] in self?.text.describe($0) ?? $0.localizedDescription } }
         marketTrend.sectorTag = loadedSettings.sectorTag
         dragonTigerWatch.days = loadedSettings.watchDays
+        cashFlowAudit.pool = loadedSettings.cashFlowPool
     }
 
     convenience init() {
@@ -48,7 +55,7 @@ final class AppViewModel: ObservableObject {
     }
 
     var modules: [ModuleModel] {
-        [limitUpPulse, dragonTigerTopology, heatRadar, marketTrend, dragonTigerWatch]
+        [limitUpPulse, dragonTigerTopology, heatRadar, marketTrend, dragonTigerWatch, industryMatrix, cashFlowAudit, financialHealth]
     }
 
     /// 某个模块当前的报告文本(没算出来为 nil)。
@@ -59,6 +66,9 @@ final class AppViewModel: ObservableObject {
         case .heatRadar: heatRadar.report?.promptText
         case .marketTrend: marketTrend.report?.promptText
         case .dragonTigerWatch: dragonTigerWatch.report?.promptText
+        case .industryMatrix: industryMatrix.report?.promptText
+        case .cashFlowAudit: cashFlowAudit.report?.promptText
+        case .financialHealth: financialHealth.report?.promptText
         }
     }
 
@@ -89,6 +99,18 @@ final class AppViewModel: ObservableObject {
         guard AppSettings.watchDayOptions.contains(days) else { return }
         settings.watchDays = days
         dragonTigerWatch.days = days
+    }
+
+    /// 现金流稽核观察池:归一化 / 去重 / 截到 20 只后同时写入设置与模型。
+    func setCashFlowPool(_ codes: [String]) {
+        let pool = AppSettings.sanitizePool(codes)
+        settings.cashFlowPool = pool
+        cashFlowAudit.pool = pool
+    }
+
+    /// 从自由文本(逗号 / 空格 / 换行分隔)解析观察池。
+    func setCashFlowPool(text: String) {
+        setCashFlowPool(AShareSymbol.codes(in: text))
     }
 
     private func persistSettings() {

@@ -122,6 +122,50 @@ final class SnapshotTests: XCTestCase {
         }
     }
 
+    // MARK: - 财务 / 行业三模块
+
+    func testRenderIndustryMatrix() async throws {
+        let viewModel = Self.makeViewModel()
+        viewModel.openModule(.industryMatrix)
+        viewModel.industryMatrix.refresh()
+        await viewModel.industryMatrix.task?.value
+        XCTAssertNil(viewModel.industryMatrix.errorText)
+        let report = try XCTUnwrap(viewModel.industryMatrix.report)
+        viewModel.industryMatrix.select(report.rows.first?.thscode)
+        for _ in 0..<50 where viewModel.industryMatrix.isLoadingEvidence {
+            try await Task.sleep(for: .milliseconds(100))
+        }
+        XCTAssertNotNil(viewModel.industryMatrix.evidence)
+        try render(name: "25-industry-matrix", size: CGSize(width: 1240, height: 2000)) {
+            workspace(viewModel: viewModel)
+        }
+    }
+
+    func testRenderCashFlowAudit() async throws {
+        let viewModel = Self.makeViewModel()
+        viewModel.openModule(.cashFlowAudit)
+        viewModel.cashFlowAudit.load()
+        await viewModel.cashFlowAudit.task?.value
+        XCTAssertNil(viewModel.cashFlowAudit.errorText)
+        XCTAssertEqual(viewModel.cashFlowAudit.report?.companies.count, AppSettings.defaultCashFlowPool.count)
+        try render(name: "26-cash-flow-audit", size: CGSize(width: 1240, height: 1800), appearance: .darkAqua) {
+            workspace(viewModel: viewModel)
+        }
+    }
+
+    func testRenderFinancialHealth() async throws {
+        let viewModel = Self.makeViewModel()
+        viewModel.openModule(.financialHealth)
+        viewModel.financialHealth.search()
+        await viewModel.financialHealth.task?.value
+        XCTAssertNil(viewModel.financialHealth.errorText)
+        XCTAssertEqual(viewModel.financialHealth.report?.thscode, "300033.SZ")
+        viewModel.financialHealth.hoveredPeriodID = viewModel.financialHealth.report?.latest?.periodEndMs
+        try render(name: "27-financial-health", size: CGSize(width: 1240, height: 2000)) {
+            workspace(viewModel: viewModel)
+        }
+    }
+
     // MARK: -
 
     /// 与 RootView 相同的布局,保证快照所见即 app 所得。

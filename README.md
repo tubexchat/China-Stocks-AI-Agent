@@ -6,7 +6,7 @@
 盘面数据来自 [同花顺金融数据 API(fuyao)](https://fuyao.aicubes.cn/docs/),全部分析在本地完成;
 每个模块都能把本地算好的文字报告一键复制出去。**本项目不含对话 / 聊天功能。**
 
-## 五个盘面模块
+## 八个盘面模块
 
 | 模块 | 数据 | 本地分析 |
 |------|------|---------|
@@ -15,12 +15,16 @@
 | **市场热度与飙升雷达** | 热股榜 / 飙升榜(日 / 小时)、个股异动原因 | 螺旋雷达(排名由内向外,点大小 = 热度,红升绿降,圈点 = 共振);热度共振、排名飙升、异动标签统计、异动关键词热度;点击个股看近 30 日热榜排名走势 |
 | **本地全市场趋势研究** | 全市场 5000+ 只快照、6 个主要指数 + 320 个行业 / 390 个概念指数日 K | 落 `Application Support/Axblade/research/` 增量缓存(只补新 K 线);市场宽度(涨跌家数、分布、中位数、成交集中度、分板块)、宽度历史、指数 / 板块趋势分(动量 + 均线结构 + 区间位置)、最强 / 最弱板块、近 10 日轮动热力图;个股趋势研究(一年前复权日 K → 趋势 / VaR / 双均线回测 / GBDT / 因子 IC);一键下载整库 Parquet 数据包 |
 | **龙虎榜机构与游资观察** | 最近 1 / 3 / 5 / 10 个交易日的龙虎榜 | 机构净买入 / 净卖出、买卖机构数、反复上榜;游资活跃度、净额、偏好概念、逐日操作明细;点击游资 / 股票看详情 |
+| **行业强度作战矩阵** | 300+ 同花顺行业指数日 K(与趋势研究共用缓存)+ 沪深 300 基准;选中行业时拉当前成分与快照 | 5 / 20 / 60 日相对强度、成交额脉冲(5 日均额 / 20 日均额)、按 RS20 的名次与 5 日名次变化、行业宽度;气泡图(悬停 / 点击)、近 20 日热力带;行业—个股联动证据:成分上涨 / 下跌家数、**等权涨跌代理(明确不是指数贡献)**、离散度、成交额活跃度 |
+| **现金流质量稽核台** | ≤ 20 只观察池(设置里可改),每只单独请求三张年报 `period=annual&limit=5` | 三表按 `period_end_ms` 对齐、按 `report_date_ms` 控制披露时点;现金转化率 / 自由现金流率 / 应计利润率 / 应收压力 / 净现金比例(分母为 0 或缺失留空);公司筛查表、利润—经营现金流瀑布桥、5 年现金证据、8 个字段的完整度审计 |
+| **单股财务体检** | `tickers/search` 消歧为唯一 A 股 → 最近 8 期季度三表 + 最新报告期 `financials/indicators` | 增长 / 盈利 / 现金流 / 杠杆的事实性归纳(同比、环比、单季推算 = 本期累计 − 同财年上期累计);可切换收入 / 利润 / 现金流序列,悬停或 ← → 看各报告期;`null` 保持缺失,不算估值、行业均值和评分 |
 
-侧栏或 `⌘1`–`⌘5` 直达模块,`⌘0` 回到模块列表;上次打开的模块下次启动直接恢复。
+侧栏或 `⌘1`–`⌘8` 直达模块,`⌘0` 回到模块列表;上次打开的模块下次启动直接恢复。
+行业强度与两个财务模块页脚都带「数据说明」卡:数据时间、真实模式、来源端点、计算口径与「非投资建议」。
 
 ## 数据源与密钥
 
-- 所有盘面数据:`https://fuyao.aicubes.cn/api/**`,请求头 `X-api-key`。
+- 所有盘面数据:`https://fuyao.aicubes.cn/api/**`,请求头 `X-api-key`。财务三表端点均为**单只股票**请求(`thscode` 不接受逗号),观察池只是限定范围的代码表。
 - 内置一枚默认 Key(`FuyaoKeyStore.builtInKey`);设置 › 数据源 可填自己的 Key,存系统钥匙串(service `io.primit.axblade`,account `fuyao.apikey`),「测试连接」拉一次交易日历验证。
 - 限流(业务码 4001 / HTTP 429)、上游超时、5xx 自动退避重试;板块抓取并发 3,单个板块失败沿用缓存。
 - 业务错误码按中英文翻译(2001 / 2003 / 3002 / 4001)。
@@ -40,7 +44,7 @@ xcodebuild build -project Axblade.xcodeproj -scheme Axblade -configuration Relea
 ./scripts/test.sh          # 单元 + 快照测试;SnapshotTests 会把每个模块页渲染成 PNG(路径见 AXBLADE_SNAPSHOT_OUTPUT=…)
 ```
 
-真实接口冒烟测试(`LiveFuyaoSmokeTests`)默认跳过;在测试宿主容器的 tmp 里创建
+真实接口冒烟测试(`LiveFuyaoSmokeTests`,含财务三模块)默认跳过;在测试宿主容器的 tmp 里创建
 `~/Library/Containers/io.primit.axblade/Data/tmp/AXBLADE_LIVE` 文件后再跑即可启用。
 
 `.xcodeproj` 不入库,改工程配置请改 `project.yml`。
@@ -77,7 +81,7 @@ Lark 群机器人通知(按钮:官网下载 / DMG 直链 / GitHub Release)。
 Axblade/
 ├── App/                 AxbladeApp(侧栏 + 模块内容区,⌘0–⌘5)
 ├── Models/
-│   ├── FuyaoModels      fuyao 全部响应形状(snake_case 一一对应,数值字段可选)
+│   ├── FuyaoModels      fuyao 全部响应形状(snake_case 一一对应,数值字段可选;含利润表 / 资产负债表 / 现金流量表 / 财务指标)
 │   ├── MarketModels     AgentModule / QuantTool / NumberFormat
 │   └── Models           AppSettings(语言、板块口径、回看天数、上次模块)
 ├── Services/
@@ -87,13 +91,16 @@ Axblade/
 │   ├── Analytics/DragonTigerAnalytics  资金流拓扑 FlowGraph + 多日机构 / 游资聚合
 │   ├── Analytics/HeatRadar      热榜 × 飙升榜 × 异动交叉
 │   ├── Analytics/MarketTrend    市场宽度、TrendMetrics、板块趋势、MarketResearchStore(本地 JSON 缓存)
+│   ├── Analytics/IndustryStrength  行业相对强度 / 成交额脉冲 / 名次 / 宽度;成分股联动证据;SectorSeriesUpdater(增量更新,与趋势研究共用)
+│   ├── Analytics/CashFlowAudit  五个现金流比率、三表对齐与披露时点、字段完整度审计
+│   ├── Analytics/FinancialHealth  8 期季报对齐、单季推算、同比、财务指标名称表
 │   ├── Quant/                   GBDT / 风控 / 因子 / 回测(原生)
 │   ├── SettingsStore / KeychainStore / Localization
 ├── ViewModels/
 │   ├── AppViewModel     设置 + 模块选择
-│   └── ModuleModels     TradingCalendar + 五个模块的加载 / 状态
+│   └── ModuleModels     TradingCalendar + 八个模块的加载 / 状态
 └── Views/
-    ├── Modules/         ModulesView(路由 + 共用组件)、ChartViews(Swift Charts + 雷达 / 拓扑 Canvas)、五个模块页
+    ├── Modules/         ModulesView(路由 + 共用组件 + 数据说明卡)、ChartViews(Swift Charts + 雷达 / 拓扑 Canvas)、FinancialCharts(气泡 / 分组柱 / 瀑布桥,带悬停)、八个模块页
     └── Sidebar / Settings(通用、数据源)/ Theme(红涨绿跌)/ BrandMark
 ```
 
@@ -106,8 +113,8 @@ Axblade/
 
 ```
 ~/Library/Containers/io.primit.axblade/Data/Library/Application Support/Axblade/
-├── settings.json          # 语言 / 板块口径 / 回看天数 / 上次模块,不含密钥
-└── research/              # 本地全市场研究缓存:series-industry.json / series-cn_concept.json / series-indices.json / snapshot-latest.json / breadth-history.json
+├── settings.json          # 语言 / 板块口径 / 回看天数 / 上次模块 / 现金流观察池,不含密钥
+└── research/              # 本地全市场研究缓存:series-industry.json(行业强度矩阵共用)/ series-cn_concept.json / series-indices.json / snapshot-latest.json / breadth-history.json
 ```
 
 ## 已知边界

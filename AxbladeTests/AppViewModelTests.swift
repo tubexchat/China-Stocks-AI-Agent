@@ -51,6 +51,50 @@ final class AppViewModelTests: XCTestCase {
         XCTAssertEqual(reloaded.dragonTigerWatch.days, 10)
     }
 
+    func testCashFlowPoolIsSanitizedAndPersisted() {
+        let viewModel = makeViewModel()
+        XCTAssertEqual(viewModel.cashFlowAudit.pool, AppSettings.defaultCashFlowPool)
+
+        viewModel.setCashFlowPool(text: "600519, sz000001 300033.SZ 600519 垃圾 1234567")
+        XCTAssertEqual(viewModel.cashFlowAudit.pool, ["600519.SH", "000001.SZ", "300033.SZ"])
+        XCTAssertEqual(makeViewModel().settings.cashFlowPool, ["600519.SH", "000001.SZ", "300033.SZ"])
+
+        let many = (0..<30).map { String(format: "60%04d", $0) }
+        viewModel.setCashFlowPool(many)
+        XCTAssertEqual(viewModel.cashFlowAudit.pool.count, AppSettings.cashFlowPoolLimit, "观察池最多 20 只")
+
+        viewModel.setCashFlowPool(text: "")
+        XCTAssertEqual(viewModel.cashFlowAudit.pool, AppSettings.defaultCashFlowPool, "空池落回默认")
+    }
+
+    func testFinancialModulesLoadFromStub() async {
+        let viewModel = makeViewModel()
+        viewModel.financialHealth.query = "同花顺"
+        viewModel.financialHealth.search()
+        await viewModel.financialHealth.task?.value
+        XCTAssertNil(viewModel.financialHealth.errorText)
+        XCTAssertEqual(viewModel.financialHealth.report?.name, "同花顺")
+        XCTAssertTrue(viewModel.moduleReport(.financialHealth)?.hasPrefix("【单股财务体检 · 同花顺 300033.SZ") == true)
+
+        viewModel.setCashFlowPool(["600519.SH", "300033.SZ"])
+        viewModel.cashFlowAudit.load()
+        await viewModel.cashFlowAudit.task?.value
+        XCTAssertNil(viewModel.cashFlowAudit.errorText)
+        XCTAssertEqual(viewModel.cashFlowAudit.report?.companies.map(\.thscode), ["600519.SH", "300033.SZ"])
+        XCTAssertEqual(viewModel.cashFlowAudit.report?.companies.first?.name, "贵州茅台")
+        XCTAssertNotNil(viewModel.moduleReport(.cashFlowAudit))
+
+        viewModel.industryMatrix.refresh()
+        await viewModel.industryMatrix.task?.value
+        XCTAssertNil(viewModel.industryMatrix.errorText)
+        XCTAssertEqual(viewModel.industryMatrix.report?.rows.count, 12)
+        XCTAssertEqual(viewModel.industryMatrix.report?.benchmarkName, "沪深300")
+        XCTAssertNotNil(viewModel.moduleReport(.industryMatrix))
+        // 行业缓存与全市场趋势共用:刷新后趋势模块也能直接从缓存出报告
+        viewModel.marketTrend.loadFromCache()
+        XCTAssertNotNil(viewModel.marketTrend.report)
+    }
+
     func testSelectingLanguagePersistsAndSwitchesStrings() {
         let viewModel = makeViewModel()
         XCTAssertEqual(viewModel.settings.language, .zh)

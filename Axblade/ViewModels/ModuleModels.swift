@@ -173,6 +173,9 @@ final class HeatRadarModel: ModuleModel {
     @Published var selectedCode: String?
     @Published private(set) var rankTrend: [HotRankPoint] = []
     @Published private(set) var isLoadingTrend = false
+    /// 排名走势的回看自然日数(7 / 14 / 30)。
+    @Published private(set) var trendDays = 30
+    static let trendDayOptions = [7, 14, 30]
 
     func load() {
         let period = period
@@ -192,12 +195,22 @@ final class HeatRadarModel: ModuleModel {
         rankTrend = []
         guard let code else { return }
         isLoadingTrend = true
+        let days = trendDays
         Task { @MainActor [self] in
             let end = Date()
-            let start = end.addingTimeInterval(-30 * 86400)
-            rankTrend = (try? await data.hotRankTrend(thscode: code, start: ShanghaiDate.string(start), end: ShanghaiDate.string(end))) ?? []
+            let start = end.addingTimeInterval(-Double(days) * 86400)
+            let points = (try? await data.hotRankTrend(thscode: code, start: ShanghaiDate.string(start), end: ShanghaiDate.string(end))) ?? []
+            guard selectedCode == code else { return }
+            rankTrend = points.sorted { $0.date < $1.date }
             isLoadingTrend = false
         }
+    }
+
+    /// 切换区间:已选中个股时按新区间重拉。
+    func setTrendDays(_ days: Int) {
+        guard Self.trendDayOptions.contains(days), days != trendDays else { return }
+        trendDays = days
+        if let selectedCode { select(selectedCode) }
     }
 }
 
@@ -283,33 +296,14 @@ final class MarketTrendModel: ModuleModel {
     }
 
     private func update(catalog: [IndexCatalogItem], cached: [SectorSeries], now: Date, label: String) async throws -> [SectorSeries] {
-        let cachedByCode = Dictionary(cached.map { ($0.thscode, $0) }, uniquingKeysWith: { a, _ in a })
-        let data = self.data
         // 并发压低到 3:上游对突发请求回 HTTP 429,客户端会退避重试,但别一上来就撞。
-        let results = try await ConcurrentFetch.map(catalog, concurrency: 3, progress: { [weak self] done, total in
+        let outcome = try await SectorSeriesUpdater.update(data: data, catalog: catalog, cached: cached, now: now, concurrency: 3, progress: { [weak self] done, total in
             Task { @MainActor in self?.progressText = "\(label) K 线 \(done)/\(total)" }
-        }) { item -> (SectorSeries, Bool) in
-            let old = cachedByCode[item.thscode]?.bars ?? []
-            // 缓存最后一根往前多取 3 天,覆盖上游修订。
-            let start = old.last.map { $0.date.addingTimeInterval(-3 * 86400) } ?? now.addingTimeInterval(-400 * 86400)
-            do {
-                let fresh = try await data.indexHistorical(thscode: item.thscode, start: start, end: now)
-                return (SectorSeries(thscode: item.thscode, name: item.name, bars: SeriesMerge.merge(cached: old, fresh: fresh)), true)
-            } catch is CancellationError {
-                throw CancellationError()
-            } catch {
-                // 单个板块重试后仍失败:留着缓存里的旧 K 线,不让整次刷新报废。
-                return (SectorSeries(thscode: item.thscode, name: item.name, bars: old), false)
-            }
+        })
+        if outcome.failures > 0 {
+            progressText = "\(label):\(outcome.failures) 个板块本次未更新(限流),沿用缓存"
         }
-        let failures = results.filter { !$0.1 }.count
-        if failures == results.count, !results.isEmpty {
-            throw FuyaoError.http(429)
-        }
-        if failures > 0 {
-            progressText = "\(label):\(failures) 个板块本次未更新(限流),沿用缓存"
-        }
-        return results.map(\.0).filter { !$0.bars.isEmpty }
+        return outcome.series
     }
 
     func clearCache() {
@@ -440,5 +434,217 @@ final class DragonTigerWatchModel: ModuleModel {
             }
             report = DragonTigerWatchAnalyzer.run(days: collected.sorted { $0.date < $1.date })
         }
+    }
+}
+
+// MARK: - 6. 行业强度作战矩阵
+
+@MainActor
+final class IndustryMatrixModel: ModuleModel {
+    @Published private(set) var report: IndustryStrengthReport?
+    @Published private(set) var lastUpdated: Date?
+    @Published var selectedCode: String?
+    @Published private(set) var evidence: IndustryConstituentEvidence?
+    @Published private(set) var isLoadingEvidence = false
+    @Published var evidenceError: String?
+
+    /// 与「本地全市场趋势研究」共用同一份行业 / 指数日 K 缓存(series-industry.json / series-indices.json)。
+    let store: MarketResearchStore
+    private var evidenceTask: Task<Void, Never>?
+
+    init(data: any AShareDataProvider, calendar: TradingCalendar, store: MarketResearchStore) {
+        self.store = store
+        super.init(data: data, calendar: calendar)
+    }
+
+    private func benchmarkSeries(from indices: [SectorSeries]) -> SectorSeries? {
+        indices.first { $0.thscode == IndustryStrengthAnalyzer.benchmark.thscode }
+    }
+
+    /// 启动时先用本地缓存出一版(不联网)。
+    func loadFromCache() {
+        let sectors = store.loadSeries(tag: "industry")
+        guard !sectors.isEmpty else { return }
+        report = IndustryStrengthAnalyzer.run(benchmark: benchmarkSeries(from: store.loadSeries(tag: "indices")), sectors: sectors)
+    }
+
+    /// 增量刷新:行业指数 + 基准指数只补最后一根缓存 K 线之后的数据。
+    func refresh(fullRebuild: Bool = false) {
+        run { [self] in
+            let now = Date()
+            progressText = "指数 K 线…"
+            let indexCatalog = MarketTrendAnalyzer.majorIndices.map { IndexCatalogItem(thscode: $0.0, name: $0.1) }
+            let indices = try await SectorSeriesUpdater.update(
+                data: data, catalog: indexCatalog, cached: fullRebuild ? [] : store.loadSeries(tag: "indices"), now: now
+            ).series
+            try store.saveSeries(indices, tag: "indices")
+
+            progressText = "行业清单…"
+            let catalog = try await data.indexCatalog(tag: "industry")
+            try Task.checkCancellation()
+            let outcome = try await SectorSeriesUpdater.update(
+                data: data, catalog: catalog, cached: fullRebuild ? [] : store.loadSeries(tag: "industry"), now: now,
+                progress: { [weak self] done, total in Task { @MainActor in self?.progressText = "行业 K 线 \(done)/\(total)" } }
+            )
+            try store.saveSeries(outcome.series, tag: "industry")
+            report = IndustryStrengthAnalyzer.run(generatedAt: now, benchmark: benchmarkSeries(from: indices), sectors: outcome.series)
+            lastUpdated = now
+            if outcome.failures > 0 {
+                progressText = "行业:\(outcome.failures) 个本次未更新(限流),沿用缓存"
+            }
+        }
+    }
+
+    /// 选中行业 → 当前成分 + 股票快照 + 指数快照 → 联动证据。
+    func select(_ code: String?) {
+        evidenceTask?.cancel()
+        selectedCode = code
+        evidence = nil
+        evidenceError = nil
+        guard let code, let row = report?.rows.first(where: { $0.thscode == code }) else { return }
+        isLoadingEvidence = true
+        evidenceTask = Task { @MainActor [self] in
+            defer { isLoadingEvidence = false }
+            do {
+                let members = try await data.constituents(thscode: code)
+                try Task.checkCancellation()
+                async let quotes = data.snapshot(thscodes: members.map(\.thscode))
+                async let indexQuote = data.indexSnapshot(thscodes: [code])
+                let snapshot = try await quotes
+                let index = (try? await indexQuote)?.first
+                try Task.checkCancellation()
+                evidence = IndustryConstituentAnalyzer.run(thscode: code, name: row.name, constituents: members, snapshot: snapshot, indexSnapshot: index)
+            } catch is CancellationError {
+            } catch {
+                evidenceError = describe(error)
+            }
+        }
+    }
+}
+
+// MARK: - 7. 现金流质量稽核台
+
+@MainActor
+final class CashFlowAuditModel: ModuleModel {
+    /// 观察池(thscode,≤ 20);由 AppViewModel 从设置注入。
+    @Published var pool: [String] = AppSettings.defaultCashFlowPool
+    /// 披露时点:只看 `report_date_ms` 不晚于此日的报告期。
+    @Published var asOf = Date()
+    @Published private(set) var report: CashFlowAuditReport?
+    @Published var selectedCode: String?
+    @Published var sortKey: CashFlowAuditSortKey = .cashConversion
+    /// 已拉过的原始三表,按代码缓存;改披露时点只重算不重拉。
+    private var cache: [String: CashFlowAuditAnalyzer.Input] = [:]
+
+    func load(force: Bool = false) {
+        let codes = Array(AppSettings.sanitizePool(pool).prefix(AppSettings.cashFlowPoolLimit))
+        if force { cache = [:] }
+        run { [self] in
+            let missing = codes.filter { cache[$0] == nil }
+            if !missing.isEmpty {
+                let data = self.data
+                let fetched = try await ConcurrentFetch.map(missing, concurrency: 3, progress: { [weak self] done, total in
+                    Task { @MainActor in self?.progressText = "财务报表 \(done)/\(total) 只(每只 3 张表)" }
+                }) { code -> CashFlowAuditAnalyzer.Input in
+                    // 每只股票单独请求三张年报;代码表只用来限定观察池,不是批量财务接口。
+                    let name = (try? await data.searchTickers(code))?.first { $0.thscode == code }?.name ?? code
+                    do {
+                        async let income = data.incomeStatements(thscode: code, period: .annual, limit: 5)
+                        async let balance = data.balanceSheets(thscode: code, period: .annual, limit: 5)
+                        async let cashFlow = data.cashFlowStatements(thscode: code, period: .annual, limit: 5)
+                        return .init(thscode: code, name: name, income: try await income, balance: try await balance, cashFlow: try await cashFlow)
+                    } catch is CancellationError {
+                        throw CancellationError()
+                    } catch {
+                        return .init(thscode: code, name: name, error: (error as? LocalizedError)?.errorDescription ?? error.localizedDescription)
+                    }
+                }
+                for input in fetched { cache[input.thscode] = input }
+            }
+            try Task.checkCancellation()
+            reanalyze(codes: codes)
+        }
+    }
+
+    /// 只重算(改披露时点 / 排序)。
+    func reanalyze(codes: [String]? = nil) {
+        let list = codes ?? Array(AppSettings.sanitizePool(pool).prefix(AppSettings.cashFlowPoolLimit))
+        let inputs = list.compactMap { cache[$0] }
+        guard !inputs.isEmpty else { return }
+        report = CashFlowAuditAnalyzer.run(asOf: asOf, inputs: inputs)
+        if let selectedCode, !inputs.contains(where: { $0.thscode == selectedCode }) { self.selectedCode = nil }
+    }
+
+    var selectedCompany: CashFlowAuditReport.Company? {
+        guard let selectedCode else { return report?.loaded.first }
+        return report?.companies.first { $0.thscode == selectedCode }
+    }
+}
+
+// MARK: - 8. 单股财务体检
+
+enum FinancialSeriesKind: String, CaseIterable, Identifiable, Sendable {
+    case revenue, profit, cashFlow
+    var id: String { rawValue }
+}
+
+@MainActor
+final class FinancialHealthModel: ModuleModel {
+    @Published var query = "同花顺"
+    /// 消歧候选(多于一只 A 股命中时让用户选)。
+    @Published private(set) var candidates: [TickerSearchItem] = []
+    @Published private(set) var report: FinancialHealthReport?
+    @Published var seriesKind: FinancialSeriesKind = .revenue
+    /// 图表显示单季推算值而不是累计值。
+    @Published var showSingleQuarter = false
+    @Published var hoveredPeriodID: Int64?
+
+    /// 搜索 → 消歧为唯一 A 股 → 拉 8 期季报 + 最新期指标。
+    func search() {
+        let raw = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !raw.isEmpty else { return }
+        candidates = []
+        run { [self] in
+            let items = try await data.searchTickers(raw)
+            try Task.checkCancellation()
+            let shares = items.filter { item in
+                (item.asset_type ?? "a-share") == "a-share" && [".SH", ".SZ", ".BJ"].contains { item.thscode.hasSuffix($0) }
+            }
+            let normalized = AShareSymbol.normalize(raw)
+            if let exact = shares.first(where: { $0.thscode == normalized }) ?? (shares.count == 1 ? shares.first : nil) ?? shares.first(where: { $0.name == raw }) {
+                try await load(exact)
+            } else if shares.isEmpty {
+                throw FuyaoError.api(code: 3001, message: "没有匹配的 A 股:\(raw)")
+            } else {
+                candidates = shares
+            }
+        }
+    }
+
+    func choose(_ item: TickerSearchItem) {
+        candidates = []
+        run { [self] in try await load(item) }
+    }
+
+    private func load(_ item: TickerSearchItem) async throws {
+        progressText = "\(item.name ?? item.thscode) 三表 8 期…"
+        async let income = data.incomeStatements(thscode: item.thscode, period: .quarterly, limit: 8)
+        async let balance = data.balanceSheets(thscode: item.thscode, period: .quarterly, limit: 8)
+        async let cashFlow = data.cashFlowStatements(thscode: item.thscode, period: .quarterly, limit: 8)
+        let (i, b, c) = try await (income, balance, cashFlow)
+        try Task.checkCancellation()
+        // 最新报告期以三表里最大的 period_end 为准,再换算成指标接口的 report 参数。
+        let latest: (any FinancialStatement)? = ([i.last, c.last, b.last] as [(any FinancialStatement)?]).compactMap { $0 }.max { $0.period_end_ms < $1.period_end_ms }
+        var indicators: FinancialIndicatorsData?
+        let reportParam = latest?.indicatorReport
+        if let reportParam {
+            progressText = "财务指标 \(reportParam)…"
+            indicators = try? await data.financialIndicators(thscode: item.thscode, report: reportParam)
+        }
+        report = FinancialHealthAnalyzer.run(
+            thscode: item.thscode, name: item.name ?? item.thscode,
+            income: i, balance: b, cashFlow: c, indicators: indicators, indicatorReport: reportParam
+        )
+        hoveredPeriodID = nil
     }
 }

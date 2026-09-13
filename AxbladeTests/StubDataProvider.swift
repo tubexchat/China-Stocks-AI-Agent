@@ -35,6 +35,16 @@ enum Fixtures {
     static var rankTrend: [HotRankPoint] { decode("hot-rank-trend", as: FuyaoList<HotRankPoint>.self).item }
     static var benchmark: [AuctionBenchmarkItem] { decode("auction-benchmark", as: AuctionBenchmarkData.self).item ?? [] }
     static var indexSnapshot: [PriceSnapshotItem] { decode("index-snapshot", as: SnapshotData.self).item }
+    static var constituents: [TickerSearchItem] { decode("index-constituents", as: FuyaoList<TickerSearchItem>.self).item }
+    static var searchTHS: [TickerSearchItem] { decode("ticker-search-ths", as: FuyaoList<TickerSearchItem>.self).item }
+    // 同花顺 300033.SZ 的三表(2026-09-13 抓取):年报 5 期 / 季报 8 期,上游降序,这里按 period_end 升序。
+    static var incomeAnnual: [IncomeStatement] { decode("income-annual", as: FuyaoList<IncomeStatement>.self).item.sorted { $0.period_end_ms < $1.period_end_ms } }
+    static var balanceAnnual: [BalanceSheet] { decode("balance-annual", as: FuyaoList<BalanceSheet>.self).item.sorted { $0.period_end_ms < $1.period_end_ms } }
+    static var cashFlowAnnual: [CashFlowStatement] { decode("cashflow-annual", as: FuyaoList<CashFlowStatement>.self).item.sorted { $0.period_end_ms < $1.period_end_ms } }
+    static var incomeQuarterly: [IncomeStatement] { decode("income-quarterly", as: FuyaoList<IncomeStatement>.self).item.sorted { $0.period_end_ms < $1.period_end_ms } }
+    static var balanceQuarterly: [BalanceSheet] { decode("balance-quarterly", as: FuyaoList<BalanceSheet>.self).item.sorted { $0.period_end_ms < $1.period_end_ms } }
+    static var cashFlowQuarterly: [CashFlowStatement] { decode("cashflow-quarterly", as: FuyaoList<CashFlowStatement>.self).item.sorted { $0.period_end_ms < $1.period_end_ms } }
+    static var indicators: FinancialIndicatorsData { decode("financial-indicators", as: FinancialIndicatorsData.self) }
 }
 
 private final class FixtureAnchor {}
@@ -65,11 +75,18 @@ final class StubDataProvider: AShareDataProvider, @unchecked Sendable {
     func searchTickers(_ query: String) async throws -> [TickerSearchItem] {
         try record("searchTickers")
         if empty { return [] }
-        return query.contains("600519") || query.contains("茅台") ? Fixtures.search : []
+        if query.contains("600519") || query.contains("茅台") { return Fixtures.search }
+        if query.contains("300033") || query.contains("同花顺") { return Fixtures.searchTHS }
+        // 其它代码:回一个只有代码的条目,名称用代码本身(现金流稽核的观察池会逐只查名称)。
+        let code = AShareSymbol.normalize(query)
+        return code.contains(".") ? [TickerSearchItem(thscode: code, ticker: String(code.prefix(6)), name: "股票\(code.prefix(6))", exchange: nil, asset_type: "a-share", currency: "CNY")] : []
     }
     func snapshot(thscodes: [String]) async throws -> [PriceSnapshotItem] {
         try record("snapshot")
-        return empty ? [] : Fixtures.snapshot.filter { thscodes.contains($0.thscode) }
+        if empty { return [] }
+        // 请求的代码在全市场夹具里有就给,凑不齐的按缺失处理(模块得能扛住部分成分没报价)。
+        let pool = Fixtures.snapshot + Fixtures.fullSnapshot
+        return pool.filter { thscodes.contains($0.thscode) }
     }
     func fullMarketSnapshot() async throws -> [PriceSnapshotItem] { try record("fullMarketSnapshot"); return empty ? [] : Fixtures.fullSnapshot }
     func historical(thscode: String, start: Date, end: Date, adjust: String) async throws -> [PriceBar] { try record("historical"); return empty ? [] : Fixtures.stockBars }
@@ -79,7 +96,7 @@ final class StubDataProvider: AShareDataProvider, @unchecked Sendable {
         try record("indexHistorical")
         return empty ? [] : Fixtures.indexBars.filter { $0.date >= start.addingTimeInterval(-86400) }
     }
-    func constituents(thscode: String) async throws -> [TickerSearchItem] { try record("constituents"); return [] }
+    func constituents(thscode: String) async throws -> [TickerSearchItem] { try record("constituents"); return empty ? [] : Fixtures.constituents }
     func limitUpPool(dateMs: Int64?) async throws -> [LimitUpItem] { try record("limitUpPool"); return empty ? [] : Fixtures.limitUp }
     func limitDownPool(dateMs: Int64?) async throws -> [LimitDownItem] { try record("limitDownPool"); return empty ? [] : Fixtures.limitDown }
     func limitBreakPool(dateMs: Int64?) async throws -> [LimitBreakItem] { try record("limitBreakPool"); return empty ? [] : Fixtures.limitBreak }
@@ -109,5 +126,26 @@ final class StubDataProvider: AShareDataProvider, @unchecked Sendable {
     func marketDumpLink(kind: MarketDumpKind) async throws -> MarketDumpLink {
         try record("marketDumpLink")
         return MarketDumpLink(presigned_url: "https://example.com/dump.parquet", presigned_url_expires_at: nil, expires_in_seconds: 300)
+    }
+
+    // 财务三表:任何代码都回同花顺的夹具,但把 thscode 换成请求的代码,方便断言对齐逻辑。
+    func incomeStatements(thscode: String, period: FinancialPeriod, limit: Int) async throws -> [IncomeStatement] {
+        try record("incomeStatements")
+        if empty { return [] }
+        return (period == .annual ? Fixtures.incomeAnnual : Fixtures.incomeQuarterly).suffix(limit).map { var x = $0; x.thscode = thscode; return x }
+    }
+    func balanceSheets(thscode: String, period: FinancialPeriod, limit: Int) async throws -> [BalanceSheet] {
+        try record("balanceSheets")
+        if empty { return [] }
+        return (period == .annual ? Fixtures.balanceAnnual : Fixtures.balanceQuarterly).suffix(limit).map { var x = $0; x.thscode = thscode; return x }
+    }
+    func cashFlowStatements(thscode: String, period: FinancialPeriod, limit: Int) async throws -> [CashFlowStatement] {
+        try record("cashFlowStatements")
+        if empty { return [] }
+        return (period == .annual ? Fixtures.cashFlowAnnual : Fixtures.cashFlowQuarterly).suffix(limit).map { var x = $0; x.thscode = thscode; return x }
+    }
+    func financialIndicators(thscode: String, report: String) async throws -> FinancialIndicatorsData {
+        try record("financialIndicators")
+        return empty ? FinancialIndicatorsData() : Fixtures.indicators
     }
 }

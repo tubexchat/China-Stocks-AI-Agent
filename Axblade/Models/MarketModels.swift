@@ -1,8 +1,9 @@
 import Foundation
 
-/// 五个盘面模块(声明顺序即侧栏 / 卡片展示顺序)。
+/// 八个盘面模块(声明顺序即侧栏 / 卡片展示顺序,⌘1–⌘8)。
 enum AgentModule: String, CaseIterable, Identifiable, Sendable, Codable {
     case limitUpPulse, dragonTigerTopology, heatRadar, marketTrend, dragonTigerWatch
+    case industryMatrix, cashFlowAudit, financialHealth
 
     var id: String { rawValue }
 
@@ -13,6 +14,17 @@ enum AgentModule: String, CaseIterable, Identifiable, Sendable, Codable {
         case .heatRadar: "dot.radiowaves.left.and.right"
         case .marketTrend: "chart.xyaxis.line"
         case .dragonTigerWatch: "eye.trianglebadge.exclamationmark"
+        case .industryMatrix: "circle.hexagongrid"
+        case .cashFlowAudit: "banknote"
+        case .financialHealth: "stethoscope"
+        }
+    }
+
+    /// 财务类模块(数据来自财务报表端点,而非盘面行情)。
+    var isFinancial: Bool {
+        switch self {
+        case .cashFlowAudit, .financialHealth: true
+        default: false
         }
     }
 }
